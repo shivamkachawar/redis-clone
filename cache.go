@@ -169,3 +169,18 @@ func (c *Cache) IncrementBy(key string, delta int) (int, error) {
 func (c *Cache) DecrementBy(key string, delta int) (int, error) {
 	return c.changeBy(key, -delta)
 }
+func (c *Cache) MGet(keys []string) []string {
+	values := make([]string, len(keys))
+
+	for i, key := range keys {
+		value, exists := c.Get(key)
+
+		if exists {
+			values[i] = value
+		} else {
+			values[i] = "(nil)"
+		}
+	}
+
+	return values
+}

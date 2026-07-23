@@ -155,6 +155,15 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 			return "", err
 		}
 		return strconv.Itoa(newValue), nil
+	case "MGET":
+		if len(tokens) < 2 {
+			return "", fmt.Errorf("Error: MGET command requires at least one key")
+		}
+
+		keys := tokens[1:]
+		values := cache.MGet(keys)
+
+		return strings.Join(values, " "), nil
 	}
 
 	return "", fmt.Errorf("Error: Unknown command")
