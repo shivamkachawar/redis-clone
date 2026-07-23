@@ -110,7 +110,18 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		return strconv.Itoa(newValue), nil
+	case "DECR":
+		if len(tokens) != 2 {
+			return "", fmt.Errorf("Error: DECR command requires a key")
+		}
 
+		key := tokens[1]
+
+		newValue, err := cache.Decrement(key)
+		if err != nil {
+			return "", err
+		}
 		return strconv.Itoa(newValue), nil
 	}
 

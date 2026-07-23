@@ -153,3 +153,28 @@ func (c *Cache) Increment(key string) (int, error) {
 
 	return value, nil
 }
+func (c *Cache) Decrement(key string) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+
+	// Key doesn't exist -> create it with value -1
+	if !exists {
+		c.data[key] = Entry{
+			Value: "-1",
+		}
+		return -1, nil
+	}
+
+	value, err := strconv.Atoi(entry.Value)
+	if err != nil {
+		return 0, fmt.Errorf("value is not an integer")
+	}
+
+	value--
+	entry.Value = strconv.Itoa(value)
+	c.data[key] = *entry
+
+	return value, nil
+}
