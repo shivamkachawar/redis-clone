@@ -40,7 +40,7 @@ func (c *Cache) getEntry(key string) (*Entry, bool) {
 
 	return &entry, true
 }
-func (c *Cache) incrementBy(key string, delta int) (int, error) {
+func (c *Cache) changeBy(key string, delta int) (int, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -158,8 +158,14 @@ func (c *Cache) TTL(key string) int {
 	return int(time.Until(entry.Expiry).Seconds())
 }
 func (c *Cache) Increment(key string) (int, error) {
-	return c.incrementBy(key, 1)
+	return c.changeBy(key, 1)
 }
 func (c *Cache) Decrement(key string) (int, error) {
-	return c.incrementBy(key, -1)
+	return c.changeBy(key, -1)
+}
+func (c *Cache) IncrementBy(key string, delta int) (int, error) {
+	return c.changeBy(key, delta)
+}
+func (c *Cache) DecrementBy(key string, delta int) (int, error) {
+	return c.changeBy(key, -delta)
 }

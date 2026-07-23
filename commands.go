@@ -123,6 +123,38 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 			return "", err
 		}
 		return strconv.Itoa(newValue), nil
+	case "INCRBY":
+		if len(tokens) != 3 {
+			return "", fmt.Errorf("Error: INCRBY command requires a key and a delta")
+		}
+
+		key := tokens[1]
+		delta, err := strconv.Atoi(tokens[2])
+		if err != nil {
+			return "", fmt.Errorf("Error: INCRBY command requires a valid integer delta")
+		}
+
+		newValue, err := cache.IncrementBy(key, delta)
+		if err != nil {
+			return "", err
+		}
+		return strconv.Itoa(newValue), nil
+	case "DECRBY":
+		if len(tokens) != 3 {
+			return "", fmt.Errorf("Error: DECRBY command requires a key and a delta")
+		}
+
+		key := tokens[1]
+		delta, err := strconv.Atoi(tokens[2])
+		if err != nil {
+			return "", fmt.Errorf("Error: DECRBY command requires a valid integer delta")
+		}
+
+		newValue, err := cache.DecrementBy(key, delta)
+		if err != nil {
+			return "", err
+		}
+		return strconv.Itoa(newValue), nil
 	}
 
 	return "", fmt.Errorf("Error: Unknown command")
