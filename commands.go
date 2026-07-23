@@ -99,6 +99,19 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 			return "1", nil
 		}
 		return "0", nil
+	case "INCR":
+		if len(tokens) != 2 {
+			return "", fmt.Errorf("Error: INCR command requires a key")
+		}
+
+		key := tokens[1]
+
+		newValue, err := cache.Increment(key)
+		if err != nil {
+			return "", err
+		}
+
+		return strconv.Itoa(newValue), nil
 	}
 
 	return "", fmt.Errorf("Error: Unknown command")
