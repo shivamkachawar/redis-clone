@@ -1,0 +1,13 @@
+# Go binary
+redis-clone
+
+# Compiled binaries
+*.exe
+*.out
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
