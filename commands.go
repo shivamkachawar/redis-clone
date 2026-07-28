@@ -218,6 +218,12 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 			responses = append(responses, NewBulkString(key))
 		}
 		return NewArray(responses), nil
+	case "DBSIZE":
+		if len(tokens) != 1 {
+			return Response{}, fmt.Errorf("ERR wrong number of arguments for 'DBSIZE' command")
+		}
+		size := cache.Size()
+		return NewInteger(size), nil
 	}
 
 	return Response{}, fmt.Errorf("Error: Unknown command")

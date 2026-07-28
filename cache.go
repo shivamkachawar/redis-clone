@@ -268,3 +268,18 @@ func (c *Cache) Keys() []string {
 	}
 	return keys
 }
+func (c *Cache) Size() int {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	count := 0
+
+	for key := range c.data {
+		_, exists := c.getEntry(key)
+		if exists {
+			count++
+		}
+	}
+
+	return count
+}
