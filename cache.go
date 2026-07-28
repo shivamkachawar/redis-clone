@@ -8,7 +8,7 @@ import (
 )
 
 type Entry struct {
-	Value  string
+	Value  RedisValue
 	Expiry time.Time
 }
 
@@ -49,12 +49,18 @@ func (c *Cache) changeBy(key string, delta int) (int, error) {
 	// Key doesn't exist
 	if !exists {
 		c.data[key] = Entry{
-			Value: strconv.Itoa(delta),
+			Value: &StringValue{
+				Value: strconv.Itoa(delta),
+			},
 		}
 		return delta, nil
 	}
+	str, err := getString(entry)
+	if err != nil {
+		return 0, err
+	}
 
-	value, err := strconv.Atoi(entry.Value)
+	value, err := strconv.Atoi(str.Value)
 
 	if err != nil {
 		return 0, fmt.Errorf("value is not an integer")
@@ -62,10 +68,17 @@ func (c *Cache) changeBy(key string, delta int) (int, error) {
 
 	value += delta
 
-	entry.Value = strconv.Itoa(value)
+	str.Value = strconv.Itoa(value)
 	c.data[key] = *entry
 
 	return value, nil
+}
+func getString(entry *Entry) (*StringValue, error) {
+	str, ok := entry.Value.(*StringValue)
+	if !ok {
+		return nil, WRONGTYPE
+	}
+	return str, nil
 }
 
 // Client APIs
@@ -75,7 +88,9 @@ func (c *Cache) Set(key string, value string, ttl int) {
 	defer c.mutex.Unlock()
 
 	entry := Entry{
-		Value: value,
+		Value: &StringValue{
+			Value: value,
+		},
 	}
 
 	if ttl > 0 {
@@ -94,7 +109,12 @@ func (c *Cache) Get(key string) (string, bool) {
 		return "", false
 	}
 
-	return entry.Value, true
+	str, ok := entry.Value.(*StringValue)
+	if !ok {
+		return "", false
+	}
+
+	return str.Value, true
 }
 
 func (c *Cache) Delete(keys []string) int {
@@ -205,7 +225,9 @@ func (c *Cache) MSet(keys []string, values []string) {
 
 	for i := 0; i < len(keys); i++ {
 		c.data[keys[i]] = Entry{
-			Value: values[i],
+			Value: &StringValue{
+				Value: values[i],
+			},
 		}
 	}
 }
@@ -217,14 +239,22 @@ func (c *Cache) Append(key string, value string) int {
 
 	if !exists {
 		c.data[key] = Entry{
-			Value: value,
+			Value: &StringValue{
+				Value: value,
+			},
 		}
 		return len(value)
 	}
-	entry.Value += value
+	str, err := getString(entry)
+	if err != nil {
+		return 0
+	}
+
+	str.Value += value
+
 	c.data[key] = *entry
 
-	return len(entry.Value)
+	return len(str.Value)
 }
 func (c *Cache) Strlen(key string) int {
 	c.mutex.Lock()
@@ -234,7 +264,12 @@ func (c *Cache) Strlen(key string) int {
 	if !exists {
 		return 0
 	}
-	return len(entry.Value)
+	str, err := getString(entry)
+	if err != nil {
+		return 0
+	}
+
+	return len(str.Value)
 }
 func (c *Cache) GetSet(key string, value string) (string, bool) {
 	c.mutex.Lock()
@@ -244,13 +279,22 @@ func (c *Cache) GetSet(key string, value string) (string, bool) {
 
 	if !exists {
 		c.data[key] = Entry{
-			Value: value,
+			Value: &StringValue{
+				Value: value,
+			},
 		}
 		return "", false
 	}
-	oldValue := entry.Value
+	str, err := getString(entry)
+	if err != nil {
+		return "", false
+	}
+
+	oldValue := str.Value
 	c.data[key] = Entry{
-		Value: value,
+		Value: &StringValue{
+			Value: value,
+		},
 	}
 	return oldValue, true
 }

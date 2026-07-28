@@ -81,9 +81,13 @@ func (a *AOF) Rewrite(cache *Cache) error {
 	entries := cache.Entries()
 
 	for key, entry := range entries {
-		tokens := []string{"SET", key, entry.Value}
+		str, err := getString(&entry)
+		if err != nil {
+			continue
+		}
+		tokens := []string{"SET", key, str.Value}
 
-		err := writeRESP(file, tokens)
+		err = writeRESP(file, tokens)
 		if err != nil {
 			return err
 		}
