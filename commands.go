@@ -161,9 +161,9 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		}
 
 		keys := tokens[1:]
-		values := cache.MGet(keys)
+		responses := cache.MGet(keys)
 
-		return NewSimpleString(strings.Join(values, " ")), nil
+		return NewArray(responses), nil
 	case "MSET":
 		if len(tokens) < 3 {
 			return Response{}, fmt.Errorf("Error: MSET command requires at least one key-value pair")

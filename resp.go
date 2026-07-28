@@ -61,7 +61,7 @@ func parseRESP(reader *bufio.Reader) ([]string, error) {
 		}
 
 		tokens = append(tokens, string(data))
-		_ = length // We can ignore the length for now, but we could validate it if needed
+
 	}
 	fmt.Println(tokens)
 

@@ -27,3 +27,44 @@ func writeNullBulkString(conn net.Conn) error {
 	_, err := fmt.Fprint(conn, "$-1\r\n")
 	return err
 }
+func writeArray(conn net.Conn, elements []Response) error {
+	_, err := fmt.Fprintf(conn, "*%d\r\n", len(elements))
+	if err != nil {
+		return err
+	}
+
+	for _, element := range elements {
+		err := writeResponse(conn, element)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+func writeResponse(conn net.Conn, response Response) error {
+	switch response.Type {
+
+	case SimpleString:
+		return writeSimpleString(conn, response.Value)
+
+	case BulkString:
+		return writeBulkString(conn, response.Value)
+
+	case Integer:
+		return writeInteger(conn, response.Integer)
+
+	case NullBulkString:
+		return writeNullBulkString(conn)
+
+	case Array:
+		return writeArray(conn, response.Elements)
+
+	case Error:
+		return writeError(conn, response.Value)
+
+	default:
+		return fmt.Errorf("unknown response type")
+	}
+
+}

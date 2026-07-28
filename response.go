@@ -7,13 +7,15 @@ const (
 	BulkString
 	Integer
 	NullBulkString
+	Array
 	Error
 )
 
 type Response struct {
-	Type    ResponseType
-	Value   string
-	Integer int
+	Type     ResponseType
+	Value    string
+	Integer  int
+	Elements []Response
 }
 
 func NewSimpleString(value string) Response {
@@ -40,5 +42,11 @@ func NewInteger(value int) Response {
 func NewNullBulkString() Response {
 	return Response{
 		Type: NullBulkString,
+	}
+}
+func NewArray(elements []Response) Response {
+	return Response{
+		Type:     Array,
+		Elements: elements,
 	}
 }

@@ -40,30 +40,12 @@ func handleClient(conn net.Conn, cache *Cache) {
 			writeError(conn, err.Error())
 			continue
 		}
-
-		switch response.Type {
-		case SimpleString:
-			err = writeSimpleString(conn, response.Value)
-
-		case BulkString:
-			err = writeBulkString(conn, response.Value)
-
-		case Integer:
-			err = writeInteger(conn, response.Integer)
-
-		case NullBulkString:
-			err = writeNullBulkString(conn)
-
-		case Error:
-			err = writeError(conn, response.Value)
-
-		default:
-			err = writeError(conn, "Unknown response type")
-		}
+		err = writeResponse(conn, response)
 
 		if err != nil {
 			fmt.Println("Write error:", err)
 			break
 		}
+
 	}
 }
