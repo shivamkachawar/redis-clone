@@ -289,3 +289,18 @@ func (c *Cache) Flush() {
 
 	c.data = make(map[string]Entry)
 }
+func (c *Cache) Entries() map[string]Entry {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entries := make(map[string]Entry)
+
+	for key := range c.data {
+		entry, exists := c.getEntry(key)
+		if exists {
+			entries[key] = *entry
+		}
+	}
+
+	return entries
+}

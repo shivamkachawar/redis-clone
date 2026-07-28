@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+const (
+	replayAOF  = true
+	rewriteAOF = false
+)
+
 func main() {
 	cache := NewCache()
 
@@ -17,11 +22,19 @@ func main() {
 	}
 	defer aof.file.Close()
 
-	err = aof.Replay(cache)
-	if err != nil {
-		log.Fatal(err)
+	if replayAOF {
+		err = aof.Replay(cache)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
+	if rewriteAOF {
+		err = aof.Rewrite(cache)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	listener, err := net.Listen("tcp", ":6379")
 	if err != nil {
 		fmt.Println(err)

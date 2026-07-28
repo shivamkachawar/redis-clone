@@ -22,24 +22,30 @@ func NewAOF(filename string) (*AOF, error) {
 	}, nil
 }
 
-func (a *AOF) Write(tokens []string) error {
-	_, err := fmt.Fprintf(a.file, "*%d\r\n", len(tokens))
+// writeRESP writes a RESP array to the given file. -> Helper Function for Write and Rewrite
+func writeRESP(file *os.File, tokens []string) error {
+	_, err := fmt.Fprintf(file, "*%d\r\n", len(tokens))
 	if err != nil {
 		return err
 	}
 
 	for _, token := range tokens {
-		_, err := fmt.Fprintf(a.file, "$%d\r\n%s\r\n", len(token), token)
+		_, err := fmt.Fprintf(file, "$%d\r\n%s\r\n", len(token), token)
 		if err != nil {
 			return err
 		}
 	}
-	err = a.file.Sync()
+
+	return nil
+}
+
+func (a *AOF) Write(tokens []string) error {
+	err := writeRESP(a.file, tokens)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return a.file.Sync()
 }
 func (a *AOF) Replay(cache *Cache) error {
 	_, err := a.file.Seek(0, io.SeekStart)
@@ -64,5 +70,25 @@ func (a *AOF) Replay(cache *Cache) error {
 			return err
 		}
 	}
+	return nil
+}
+func (a *AOF) Rewrite(cache *Cache) error {
+	file, err := os.Create("appendonly.new.aof")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	entries := cache.Entries()
+
+	for key, entry := range entries {
+		tokens := []string{"SET", key, entry.Value}
+
+		err := writeRESP(file, tokens)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
