@@ -182,6 +182,13 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 
 		cache.MSet(keys, values)
 		return "OK", nil
+	case "APPEND":
+		if len(tokens) != 3 {
+			return "", fmt.Errorf("Error: APPEND requires exactly two arguments")
+		}
+		length := cache.Append(tokens[1], tokens[2])
+
+		return strconv.Itoa(length), nil
 	}
 
 	return "", fmt.Errorf("Error: Unknown command")

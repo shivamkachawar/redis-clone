@@ -194,3 +194,20 @@ func (c *Cache) MSet(keys []string, values []string) {
 		}
 	}
 }
+func (c *Cache) Append(key string, value string) int {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+
+	if !exists {
+		c.data[key] = Entry{
+			Value: value,
+		}
+		return len(value)
+	}
+	entry.Value += value
+	c.data[key] = *entry
+
+	return len(entry.Value)
+}
