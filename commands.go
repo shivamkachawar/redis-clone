@@ -307,6 +307,21 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		}
 
 		return NewInteger(length), nil
+	case "RPOP":
+		if len(tokens) != 2 {
+			return Response{}, fmt.Errorf("ERR wrong number of arguments for 'RPOP' command")
+		}
+
+		value, exists, err := cache.RPop(tokens[1])
+		if err != nil {
+			return Response{}, err
+		}
+
+		if !exists {
+			return NewNullBulkString(), nil
+		}
+
+		return NewBulkString(value), nil
 	default:
 		return Response{}, fmt.Errorf("Error: Unknown command")
 	}

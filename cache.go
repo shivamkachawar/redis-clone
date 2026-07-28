@@ -442,26 +442,37 @@ func (c *Cache) LLen(key string) (int, error) {
 
 	return len(list.Values), nil
 }
-func (c *Cache) LPop(key string) (string, bool, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
+func (c *Cache) getList(key string) (*ListValue, bool, error) {
 	entry, exists := c.getEntry(key)
 
 	if !exists {
-		return "", false, nil
+		return nil, false, nil
 	}
 
 	list, ok := entry.Value.(*ListValue)
 	if !ok {
-		return "", true, ErrWrongType
+		return nil, true, ErrWrongType
 	}
 
 	if len(list.Values) == 0 {
-		return "", false, nil
+		delete(c.data, key)
+		return nil, false, nil
 	}
+
+	return list, true, nil
+}
+func (c *Cache) LPop(key string) (string, bool, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	list, exists, err := c.getList(key)
+	if err != nil || !exists {
+		return "", exists, err
+	}
+
 	value := list.Values[0]
 	list.Values = list.Values[1:]
+
 	if len(list.Values) == 0 {
 		delete(c.data, key)
 	}
@@ -480,4 +491,24 @@ func (c *Cache) RPush(key string, values []string) (int, error) {
 	list.Values = append(list.Values, values...)
 
 	return len(list.Values), nil
+}
+func (c *Cache) RPop(key string) (string, bool, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	list, exists, err := c.getList(key)
+	if err != nil || !exists {
+		return "", exists, err
+	}
+
+	last := len(list.Values) - 1
+	value := list.Values[last]
+
+	list.Values = list.Values[:last]
+
+	if len(list.Values) == 0 {
+		delete(c.data, key)
+	}
+
+	return value, true, nil
 }
