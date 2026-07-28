@@ -3,7 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"net"
+	"strings"
 )
 
 func main() {
@@ -15,6 +17,13 @@ func main() {
 	fmt.Println("Server listening on Port 6379")
 	cache := NewCache()
 
+	aof, err := NewAOF("appendonly.aof")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer aof.file.Close()
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -22,10 +31,10 @@ func main() {
 			continue
 		}
 		fmt.Println("Client Connected : ", conn.RemoteAddr())
-		go handleClient(conn, cache)
+		go handleClient(conn, cache, aof)
 	}
 }
-func handleClient(conn net.Conn, cache *Cache) {
+func handleClient(conn net.Conn, cache *Cache, aof *AOF) {
 	reader := bufio.NewReader(conn)
 
 	for {
@@ -36,6 +45,12 @@ func handleClient(conn net.Conn, cache *Cache) {
 		}
 
 		response, err := executeCommand(tokens, cache)
+		if err == nil && isWriteCommand(tokens[0]) {
+			if err := aof.Write(tokens); err != nil {
+				fmt.Println("AOF write error:", err)
+				break
+			}
+		}
 		if err != nil {
 			writeError(conn, err.Error())
 			continue
@@ -46,6 +61,13 @@ func handleClient(conn net.Conn, cache *Cache) {
 			fmt.Println("Write error:", err)
 			break
 		}
-
+	}
+}
+func isWriteCommand(command string) bool {
+	switch strings.ToUpper(command) {
+	case "SET", "MSET", "DEL", "APPEND", "GETSET", "INCR", "DECR", "INCRBY", "DECRBY", "EXPIRE", "PERSIST", "FLUSHDB":
+		return true
+	default:
+		return false
 	}
 }

@@ -4,6 +4,7 @@ redis-clone
 # Compiled binaries
 *.exe
 *.out
+*.aof
 
 # IDE
 .vscode/
