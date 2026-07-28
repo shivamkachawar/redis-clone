@@ -184,3 +184,13 @@ func (c *Cache) MGet(keys []string) []string {
 
 	return values
 }
+func (c *Cache) MSet(keys []string, values []string) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	for i := 0; i < len(keys); i++ {
+		c.data[keys[i]] = Entry{
+			Value: values[i],
+		}
+	}
+}

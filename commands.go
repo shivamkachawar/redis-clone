@@ -164,6 +164,24 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 		values := cache.MGet(keys)
 
 		return strings.Join(values, " "), nil
+	case "MSET":
+		if len(tokens) < 3 {
+			return "", fmt.Errorf("Error: MSET command requires at least one key-value pair")
+		}
+		if len(tokens)%2 == 0 {
+			return "", fmt.Errorf("Error: MSET required key-vlue pairs, but got an odd number of arguments")
+		}
+
+		var keys []string
+		var values []string
+
+		for i := 1; i < len(tokens); i += 2 {
+			keys = append(keys, tokens[i])
+			values = append(values, tokens[i+1])
+		}
+
+		cache.MSet(keys, values)
+		return "OK", nil
 	}
 
 	return "", fmt.Errorf("Error: Unknown command")
