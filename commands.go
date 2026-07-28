@@ -90,14 +90,11 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		}
 		return NewInteger(0), nil
 	case "EXISTS":
-		if len(tokens) != 2 {
+		if len(tokens) < 2 {
 			return Response{}, fmt.Errorf("Error: EXISTS command requires a key")
 		}
-		key := tokens[1]
-		if cache.Exists(key) {
-			return NewInteger(1), nil
-		}
-		return NewInteger(0), nil
+		count := cache.Exists(tokens[1:])
+		return NewInteger(count), nil
 	case "INCR":
 		if len(tokens) != 2 {
 			return Response{}, fmt.Errorf("Error: INCR command requires a key")

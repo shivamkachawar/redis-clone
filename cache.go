@@ -113,12 +113,18 @@ func (c *Cache) Delete(keys []string) int {
 	return deleted
 }
 
-func (c *Cache) Exists(key string) bool {
+func (c *Cache) Exists(keys []string) int {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	_, exists := c.getEntry(key)
-	return exists
+	count := 0
+	for _, key := range keys {
+		_, exists := c.getEntry(key)
+		if exists {
+			count++
+		}
+	}
+	return count
 }
 
 func (c *Cache) Expire(key string, seconds int) bool {
