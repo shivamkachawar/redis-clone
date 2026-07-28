@@ -418,5 +418,21 @@ func (c *Cache) LRange(key string, start int, stop int) ([]string, error) {
 	}
 
 	return list.Values[start : stop+1], nil
+}
+func (c *Cache) LLen(key string) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 
+	entry, exists := c.getEntry(key)
+
+	if !exists {
+		return 0, nil
+	}
+
+	list, ok := entry.Value.(*ListValue)
+	if !ok {
+		return 0, ErrWrongType
+	}
+
+	return len(list.Values), nil
 }

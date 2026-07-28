@@ -272,6 +272,17 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		}
 
 		return NewArray(responses), nil
+	case "LLEN":
+		if len(tokens) != 2 {
+			return Response{}, fmt.Errorf("ERR wrong number of arguments for 'LLEN' command")
+		}
+
+		length, err := cache.LLen(tokens[1])
+		if err != nil {
+			return Response{}, err
+		}
+
+		return NewInteger(length), nil
 	default:
 		return Response{}, fmt.Errorf("Error: Unknown command")
 	}
