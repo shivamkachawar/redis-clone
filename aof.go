@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -32,6 +34,35 @@ func (a *AOF) Write(tokens []string) error {
 			return err
 		}
 	}
+	err = a.file.Sync()
+	if err != nil {
+		return err
+	}
 
+	return nil
+}
+func (a *AOF) Replay(cache *Cache) error {
+	_, err := a.file.Seek(0, io.SeekStart)
+	if err != nil {
+		return err
+	}
+	reader := bufio.NewReader(a.file)
+	for {
+		tokens, err := parseRESP(reader)
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+
+		// executeCommand(...)
+		_, err = executeCommand(tokens, cache)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

@@ -9,20 +9,27 @@ import (
 )
 
 func main() {
+	cache := NewCache()
+
+	aof, err := NewAOF("appendonly.aof")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer aof.file.Close()
+
+	err = aof.Replay(cache)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	listener, err := net.Listen("tcp", ":6379")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+	defer listener.Close()
+
 	fmt.Println("Server listening on Port 6379")
-	cache := NewCache()
-
-	aof, err := NewAOF("appendonly.aof")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer aof.file.Close()
 
 	for {
 		conn, err := listener.Accept()
@@ -30,7 +37,8 @@ func main() {
 			fmt.Println(err)
 			continue
 		}
-		fmt.Println("Client Connected : ", conn.RemoteAddr())
+
+		fmt.Println("Client Connected:", conn.RemoteAddr())
 		go handleClient(conn, cache, aof)
 	}
 }
