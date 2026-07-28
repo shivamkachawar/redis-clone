@@ -8,3 +8,9 @@ type StringValue struct {
 }
 
 func (*StringValue) isRedisValue() {}
+
+type ListValue struct {
+	Values []string
+}
+
+func (*ListValue) isRedisValue() {}

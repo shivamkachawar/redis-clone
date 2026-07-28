@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -76,7 +77,7 @@ func (c *Cache) changeBy(key string, delta int) (int, error) {
 func getString(entry *Entry) (*StringValue, error) {
 	str, ok := entry.Value.(*StringValue)
 	if !ok {
-		return nil, WRONGTYPE
+		return nil, ErrWrongType
 	}
 	return str, nil
 }
@@ -100,21 +101,21 @@ func (c *Cache) Set(key string, value string, ttl int) {
 	c.data[key] = entry
 }
 
-func (c *Cache) Get(key string) (string, bool) {
+func (c *Cache) Get(key string) (string, bool, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {
-		return "", false
+		return "", false, nil
 	}
 
 	str, ok := entry.Value.(*StringValue)
 	if !ok {
-		return "", false
+		return "", true, ErrWrongType
 	}
 
-	return str.Value, true
+	return str.Value, true, nil
 }
 
 func (c *Cache) Delete(keys []string) int {
@@ -204,12 +205,14 @@ func (c *Cache) IncrementBy(key string, delta int) (int, error) {
 func (c *Cache) DecrementBy(key string, delta int) (int, error) {
 	return c.changeBy(key, -delta)
 }
-func (c *Cache) MGet(keys []string) []Response {
+func (c *Cache) MGet(keys []string) ([]Response, error) {
 	responses := make([]Response, len(keys))
 
 	for i, key := range keys {
-		value, exists := c.Get(key)
-
+		value, exists, err := c.Get(key)
+		if err != nil {
+			return nil, err
+		}
 		if exists {
 			responses[i] = NewBulkString(value)
 		} else {
@@ -217,7 +220,7 @@ func (c *Cache) MGet(keys []string) []Response {
 		}
 	}
 
-	return responses
+	return responses, nil
 }
 func (c *Cache) MSet(keys []string, values []string) {
 	c.mutex.Lock()
@@ -347,4 +350,32 @@ func (c *Cache) Entries() map[string]Entry {
 	}
 
 	return entries
+}
+func (c *Cache) LPush(key string, values []string) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	entry, exists := c.getEntry(key)
+	var list *ListValue
+
+	if !exists {
+		list = &ListValue{
+			Values: []string{},
+		}
+
+		c.data[key] = Entry{
+			Value: list,
+		}
+	} else {
+		var ok bool
+		list, ok = entry.Value.(*ListValue)
+		if !ok {
+			return 0, errors.New("WRONGTYPE")
+		}
+	}
+
+	for _, value := range values {
+		list.Values = append([]string{value}, list.Values...)
+	}
+
+	return len(list.Values), nil
 }

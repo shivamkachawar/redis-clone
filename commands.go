@@ -46,7 +46,10 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 			return Response{}, fmt.Errorf("Error: GET command requires a key")
 		}
 		key := tokens[1]
-		value, exists := cache.Get(key)
+		value, exists, err := cache.Get(key)
+		if err != nil {
+			return Response{}, err
+		}
 		if !exists {
 			return NewNullBulkString(), nil
 		}
@@ -157,7 +160,10 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		}
 
 		keys := tokens[1:]
-		responses := cache.MGet(keys)
+		responses, err := cache.MGet(keys)
+		if err != nil {
+			return Response{}, err
+		}
 
 		return NewArray(responses), nil
 	case "MSET":
@@ -230,6 +236,16 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		}
 		cache.Flush()
 		return NewSimpleString("OK"), nil
+	case "LPUSH":
+		if len(tokens) < 3 {
+			return Response{}, fmt.Errorf("ERR wrong number of arguments for 'LPUSH' command")
+		}
+
+		length, err := cache.LPush(tokens[1], tokens[2:])
+		if err != nil {
+			return Response{}, err
+		}
+		return NewInteger(length), nil
 	default:
 		return Response{}, fmt.Errorf("Error: Unknown command")
 	}
