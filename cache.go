@@ -436,3 +436,29 @@ func (c *Cache) LLen(key string) (int, error) {
 
 	return len(list.Values), nil
 }
+func (c *Cache) LPop(key string) (string, bool, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+
+	if !exists {
+		return "", false, nil
+	}
+
+	list, ok := entry.Value.(*ListValue)
+	if !ok {
+		return "", true, ErrWrongType
+	}
+
+	if len(list.Values) == 0 {
+		return "", false, nil
+	}
+	value := list.Values[0]
+	list.Values = list.Values[1:]
+	if len(list.Values) == 0 {
+		delete(c.data, key)
+	}
+
+	return value, true, nil
+}

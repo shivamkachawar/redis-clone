@@ -281,8 +281,21 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		if err != nil {
 			return Response{}, err
 		}
-
 		return NewInteger(length), nil
+	case "LPOP":
+		if len(tokens) != 2 {
+			return Response{}, fmt.Errorf("ERR wrong number of arguments for 'LPOP' command")
+		}
+		value, exists, err := cache.LPop(tokens[1])
+		if err != nil {
+			return Response{}, err
+		}
+
+		if !exists {
+			return NewNullBulkString(), nil
+		}
+
+		return NewBulkString(value), nil
 	default:
 		return Response{}, fmt.Errorf("Error: Unknown command")
 	}
