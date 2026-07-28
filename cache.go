@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -351,31 +350,38 @@ func (c *Cache) Entries() map[string]Entry {
 
 	return entries
 }
-func (c *Cache) LPush(key string, values []string) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+func (c *Cache) getOrCreateList(key string) (*ListValue, error) {
 	entry, exists := c.getEntry(key)
-	var list *ListValue
 
 	if !exists {
-		list = &ListValue{
+		list := &ListValue{
 			Values: []string{},
 		}
 
 		c.data[key] = Entry{
 			Value: list,
 		}
-	} else {
-		var ok bool
-		list, ok = entry.Value.(*ListValue)
-		if !ok {
-			return 0, errors.New("WRONGTYPE")
-		}
+
+		return list, nil
 	}
 
-	for _, value := range values {
-		list.Values = append([]string{value}, list.Values...)
+	list, ok := entry.Value.(*ListValue)
+	if !ok {
+		return nil, ErrWrongType
 	}
+
+	return list, nil
+}
+func (c *Cache) LPush(key string, values []string) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	list, err := c.getOrCreateList(key)
+	if err != nil {
+		return 0, err
+	}
+
+	list.Values = append(values, list.Values...)
 
 	return len(list.Values), nil
 }
@@ -461,4 +467,17 @@ func (c *Cache) LPop(key string) (string, bool, error) {
 	}
 
 	return value, true, nil
+}
+func (c *Cache) RPush(key string, values []string) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	list, err := c.getOrCreateList(key)
+	if err != nil {
+		return 0, err
+	}
+
+	list.Values = append(list.Values, values...)
+
+	return len(list.Values), nil
 }

@@ -296,6 +296,17 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		}
 
 		return NewBulkString(value), nil
+	case "RPUSH":
+		if len(tokens) < 3 {
+			return Response{}, fmt.Errorf("ERR wrong number of arguments for 'RPUSH' command")
+		}
+
+		length, err := cache.RPush(tokens[1], tokens[2:])
+		if err != nil {
+			return Response{}, err
+		}
+
+		return NewInteger(length), nil
 	default:
 		return Response{}, fmt.Errorf("Error: Unknown command")
 	}
