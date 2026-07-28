@@ -77,7 +77,6 @@ func (a *AOF) Rewrite(cache *Cache) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
 	entries := cache.Entries()
 
@@ -89,6 +88,25 @@ func (a *AOF) Rewrite(cache *Cache) error {
 			return err
 		}
 	}
-
+	err = file.Sync()
+	if err != nil {
+		return err
+	}
+	err = file.Close()
+	if err != nil {
+		return err
+	}
+	err = a.file.Close()
+	if err != nil {
+		return err
+	}
+	err = os.Rename("appendonly.new.aof", "appendonly.aof")
+	if err != nil {
+		return err
+	}
+	a.file, err = os.OpenFile("appendonly.aof", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
 	return nil
 }
