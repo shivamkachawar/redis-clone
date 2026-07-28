@@ -196,6 +196,16 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 		length := cache.Strlen(tokens[1])
 
 		return strconv.Itoa(length), nil
+	case "GETSET":
+		if len(tokens) != 3 {
+			return "", fmt.Errorf("Error: GETSET requires exactly two arguments")
+		}
+		oldValue, exists := cache.GetSet(tokens[1], tokens[2])
+
+		if !exists {
+			return "(nil)", nil
+		}
+		return oldValue, nil
 	}
 
 	return "", fmt.Errorf("Error: Unknown command")

@@ -221,3 +221,21 @@ func (c *Cache) Strlen(key string) int {
 	}
 	return len(entry.Value)
 }
+func (c *Cache) GetSet(key string, value string) (string, bool) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+
+	if !exists {
+		c.data[key] = Entry{
+			Value: value,
+		}
+		return "", false
+	}
+	oldValue := entry.Value
+	c.data[key] = Entry{
+		Value: value,
+	}
+	return oldValue, true
+}
