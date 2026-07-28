@@ -379,3 +379,44 @@ func (c *Cache) LPush(key string, values []string) (int, error) {
 
 	return len(list.Values), nil
 }
+func (c *Cache) LRange(key string, start int, stop int) ([]string, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+
+	if !exists {
+		return []string{}, nil
+	}
+	list, ok := entry.Value.(*ListValue)
+	if !ok {
+		return nil, ErrWrongType
+	}
+	if len(list.Values) == 0 {
+		return []string{}, nil
+	}
+	if start < 0 {
+		start = len(list.Values) + start
+	}
+	if stop < 0 {
+		stop = len(list.Values) + stop
+	}
+	if start < 0 {
+		start = 0
+	}
+	if stop < 0 {
+		stop = 0
+	}
+	if start >= len(list.Values) {
+		return []string{}, nil
+	}
+	if stop >= len(list.Values) {
+		stop = len(list.Values) - 1
+	}
+	if start > stop {
+		return []string{}, nil
+	}
+
+	return list.Values[start : stop+1], nil
+
+}

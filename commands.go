@@ -246,6 +246,32 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 			return Response{}, err
 		}
 		return NewInteger(length), nil
+	case "LRANGE":
+		if len(tokens) != 4 {
+			return Response{}, fmt.Errorf("ERR wrong number of arguments for 'LRANGE' command")
+		}
+
+		start, err := strconv.Atoi(tokens[2])
+		if err != nil {
+			return Response{}, fmt.Errorf("ERR value is not an integer or out of range")
+		}
+
+		stop, err := strconv.Atoi(tokens[3])
+		if err != nil {
+			return Response{}, fmt.Errorf("ERR value is not an integer or out of range")
+		}
+
+		list, err := cache.LRange(tokens[1], start, stop)
+		if err != nil {
+			return Response{}, err
+		}
+
+		responses := make([]Response, len(list))
+		for i, value := range list {
+			responses[i] = NewBulkString(value)
+		}
+
+		return NewArray(responses), nil
 	default:
 		return Response{}, fmt.Errorf("Error: Unknown command")
 	}
