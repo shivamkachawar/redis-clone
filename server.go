@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"strings"
 )
 
 func main() {
@@ -29,20 +28,15 @@ func main() {
 func handleClient(conn net.Conn, cache *Cache) {
 	reader := bufio.NewReader(conn)
 	for {
-		line, err := reader.ReadString('\n')
+		tokens, err := parseRESP(reader)
 		if err != nil {
-			fmt.Println("Client Disconnected:", conn.RemoteAddr())
+			fmt.Println("Parse error:", err)
 			break
 		}
 
-		cleanedMessage := strings.TrimSpace(line)
-		tokens := strings.Fields(cleanedMessage)
-
-		if len(tokens) == 0 {
-			continue
-		}
-
 		response, err := executeCommand(tokens, cache)
+		fmt.Printf("Response: %q\n", response)
+		fmt.Printf("Error: %v\n", err)
 		if err != nil {
 			conn.Write([]byte(err.Error() + "\n"))
 			continue
