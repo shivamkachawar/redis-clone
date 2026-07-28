@@ -224,6 +224,12 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		}
 		size := cache.Size()
 		return NewInteger(size), nil
+	case "FLUSHDB":
+		if len(tokens) != 1 {
+			return Response{}, fmt.Errorf("ERR wrong number of arguments for 'FLUSHDB' command")
+		}
+		cache.Flush()
+		return NewSimpleString("OK"), nil
 	}
 
 	return Response{}, fmt.Errorf("Error: Unknown command")

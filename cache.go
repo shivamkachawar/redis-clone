@@ -283,3 +283,9 @@ func (c *Cache) Size() int {
 
 	return count
 }
+func (c *Cache) Flush() {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	c.data = make(map[string]Entry)
+}
