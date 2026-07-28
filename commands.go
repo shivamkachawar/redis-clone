@@ -230,7 +230,7 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		}
 		cache.Flush()
 		return NewSimpleString("OK"), nil
+	default:
+		return Response{}, fmt.Errorf("Error: Unknown command")
 	}
-
-	return Response{}, fmt.Errorf("Error: Unknown command")
 }
