@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-func executeCommand(tokens []string, cache *Cache) (string, error) {
+func executeCommand(tokens []string, cache *Cache) (Response, error) {
 	command := tokens[0]
 	switch command {
 	case "PING":
-		return "PONG", nil
+		return NewSimpleString("PONG"), nil
 	case "SET":
 		if len(tokens) != 3 && len(tokens) != 5 {
-			return "", fmt.Errorf("Usage: SET <key> <value> [EX <seconds>]")
+			return Response{}, fmt.Errorf("Usage: SET <key> <value> [EX <seconds>]")
 		}
 
 		key := tokens[1]
@@ -22,154 +22,154 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 		// Normal SET
 		if len(tokens) == 3 {
 			cache.Set(key, value, 0)
-			return "OK", nil
+			return NewSimpleString("OK"), nil
 		}
 
 		// SET with EX
 		if strings.ToUpper(tokens[3]) != "EX" {
-			return "", fmt.Errorf("Error: Expected EX")
+			return Response{}, fmt.Errorf("Error: Expected EX")
 		}
 
 		seconds, err := strconv.Atoi(tokens[4])
 		if err != nil {
-			return "", fmt.Errorf("Error: Invalid expiry time")
+			return Response{}, fmt.Errorf("Error: Invalid expiry time")
 		}
 
 		if seconds <= 0 {
-			return "", fmt.Errorf("Error: TTL must be greater than 0")
+			return Response{}, fmt.Errorf("Error: TTL must be greater than 0")
 		}
 
 		cache.Set(key, value, seconds)
-		return "OK", nil
+		return NewSimpleString("OK"), nil
 	case "GET":
 		if len(tokens) != 2 {
-			return "", fmt.Errorf("Error: GET command requires a key")
+			return Response{}, fmt.Errorf("Error: GET command requires a key")
 		}
 		key := tokens[1]
 		value, exists := cache.Get(key)
 		if !exists {
-			return "nil", nil
+			return NewNullBulkString(), nil
 		}
-		return value, nil
+		return NewBulkString(value), nil
 	case "DEL":
 		if len(tokens) != 2 {
-			return "", fmt.Errorf("Error: DELETE command requires a key")
+			return Response{}, fmt.Errorf("Error: DELETE command requires a key")
 		}
 		key := tokens[1]
 		cache.Delete(key)
-		return "OK", nil
+		return NewSimpleString("OK"), nil
 	case "EXPIRE":
 		if len(tokens) != 3 {
-			return "", fmt.Errorf("Error: EXPIRE command requires a key and a time in seconds")
+			return Response{}, fmt.Errorf("Error: EXPIRE command requires a key and a time in seconds")
 		}
 		key := tokens[1]
 		seconds, err := strconv.Atoi(tokens[2])
 		if err != nil {
-			return "", fmt.Errorf("Error: EXPIRE command requires a valid time in seconds")
+			return Response{}, fmt.Errorf("Error: EXPIRE command requires a valid time in seconds")
 		}
 		if seconds <= 0 {
-			return "", fmt.Errorf("Error: Expiry time must be greater than 0")
+			return Response{}, fmt.Errorf("Error: Expiry time must be greater than 0")
 		}
 		if cache.Expire(key, seconds) {
-			return "OK", nil
+			return NewInteger(1), nil
 		}
-		return "", fmt.Errorf("Error: Key not found")
+		return NewInteger(0), nil
 	case "TTL":
 		if len(tokens) != 2 {
-			return "", fmt.Errorf("Error: TTL command requires a key")
+			return Response{}, fmt.Errorf("Error: TTL command requires a key")
 		}
 		key := tokens[1]
 		ttl := cache.TTL(key)
-		return strconv.Itoa(ttl), nil
+		return NewInteger(ttl), nil
 	case "PERSIST":
 		if len(tokens) != 2 {
-			return "", fmt.Errorf("Error: PERSIST command requires a key")
+			return Response{}, fmt.Errorf("Error: PERSIST command requires a key")
 		}
 		key := tokens[1]
 		if cache.Persist(key) {
-			return "OK", nil
+			return NewInteger(1), nil
 		}
-		return "", fmt.Errorf("Error: Key not found")
+		return NewInteger(0), nil
 	case "EXISTS":
 		if len(tokens) != 2 {
-			return "", fmt.Errorf("Error: EXISTS command requires a key")
+			return Response{}, fmt.Errorf("Error: EXISTS command requires a key")
 		}
 		key := tokens[1]
 		if cache.Exists(key) {
-			return "1", nil
+			return NewInteger(1), nil
 		}
-		return "0", nil
+		return NewInteger(0), nil
 	case "INCR":
 		if len(tokens) != 2 {
-			return "", fmt.Errorf("Error: INCR command requires a key")
+			return Response{}, fmt.Errorf("Error: INCR command requires a key")
 		}
 
 		key := tokens[1]
 
 		newValue, err := cache.Increment(key)
 		if err != nil {
-			return "", err
+			return Response{}, err
 		}
-		return strconv.Itoa(newValue), nil
+		return NewInteger(newValue), nil
 	case "DECR":
 		if len(tokens) != 2 {
-			return "", fmt.Errorf("Error: DECR command requires a key")
+			return Response{}, fmt.Errorf("Error: DECR command requires a key")
 		}
 
 		key := tokens[1]
 
 		newValue, err := cache.Decrement(key)
 		if err != nil {
-			return "", err
+			return Response{}, err
 		}
-		return strconv.Itoa(newValue), nil
+		return NewInteger(newValue), nil
 	case "INCRBY":
 		if len(tokens) != 3 {
-			return "", fmt.Errorf("Error: INCRBY command requires a key and a delta")
+			return Response{}, fmt.Errorf("Error: INCRBY command requires a key and a delta")
 		}
 
 		key := tokens[1]
 		delta, err := strconv.Atoi(tokens[2])
 		if err != nil {
-			return "", fmt.Errorf("Error: INCRBY command requires a valid integer delta")
+			return Response{}, fmt.Errorf("Error: INCRBY command requires a valid integer delta")
 		}
 
 		newValue, err := cache.IncrementBy(key, delta)
 		if err != nil {
-			return "", err
+			return Response{}, err
 		}
-		return strconv.Itoa(newValue), nil
+		return NewInteger(newValue), nil
 	case "DECRBY":
 		if len(tokens) != 3 {
-			return "", fmt.Errorf("Error: DECRBY command requires a key and a delta")
+			return Response{}, fmt.Errorf("Error: DECRBY command requires a key and a delta")
 		}
 
 		key := tokens[1]
 		delta, err := strconv.Atoi(tokens[2])
 		if err != nil {
-			return "", fmt.Errorf("Error: DECRBY command requires a valid integer delta")
+			return Response{}, fmt.Errorf("Error: DECRBY command requires a valid integer delta")
 		}
 
 		newValue, err := cache.DecrementBy(key, delta)
 		if err != nil {
-			return "", err
+			return Response{}, err
 		}
-		return strconv.Itoa(newValue), nil
+		return NewInteger(newValue), nil
 	case "MGET":
 		if len(tokens) < 2 {
-			return "", fmt.Errorf("Error: MGET command requires at least one key")
+			return Response{}, fmt.Errorf("Error: MGET command requires at least one key")
 		}
 
 		keys := tokens[1:]
 		values := cache.MGet(keys)
 
-		return strings.Join(values, " "), nil
+		return NewSimpleString(strings.Join(values, " ")), nil
 	case "MSET":
 		if len(tokens) < 3 {
-			return "", fmt.Errorf("Error: MSET command requires at least one key-value pair")
+			return Response{}, fmt.Errorf("Error: MSET command requires at least one key-value pair")
 		}
 		if len(tokens)%2 == 0 {
-			return "", fmt.Errorf("Error: MSET required key-vlue pairs, but got an odd number of arguments")
+			return Response{}, fmt.Errorf("Error: MSET required key-vlue pairs, but got an odd number of arguments")
 		}
 
 		var keys []string
@@ -181,34 +181,34 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 		}
 
 		cache.MSet(keys, values)
-		return "OK", nil
+		return NewSimpleString("OK"), nil
 	case "APPEND":
 		if len(tokens) != 3 {
-			return "", fmt.Errorf("Error: APPEND requires exactly two arguments")
+			return Response{}, fmt.Errorf("Error: APPEND requires exactly two arguments")
 		}
 		length := cache.Append(tokens[1], tokens[2])
 
-		return strconv.Itoa(length), nil
+		return NewInteger(length), nil
 	case "STRLEN":
 		if len(tokens) != 2 {
-			return "", fmt.Errorf("Error: STRLEN requires exactly one argument")
+			return Response{}, fmt.Errorf("Error: STRLEN requires exactly one argument")
 		}
 		length := cache.Strlen(tokens[1])
 
-		return strconv.Itoa(length), nil
+		return NewInteger(length), nil
 	case "GETSET":
 		if len(tokens) != 3 {
-			return "", fmt.Errorf("Error: GETSET requires exactly two arguments")
+			return Response{}, fmt.Errorf("Error: GETSET requires exactly two arguments")
 		}
 		oldValue, exists := cache.GetSet(tokens[1], tokens[2])
 
 		if !exists {
-			return "(nil)", nil
+			return NewNullBulkString(), nil
 		}
-		return oldValue, nil
+		return NewBulkString(oldValue), nil
 	case "COMMAND":
-		return "OK", nil
+		return NewSimpleString("OK"), nil
 	}
 
-	return "", fmt.Errorf("Error: Unknown command")
+	return Response{}, fmt.Errorf("Error: Unknown command")
 }

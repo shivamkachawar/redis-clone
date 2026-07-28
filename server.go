@@ -27,6 +27,7 @@ func main() {
 }
 func handleClient(conn net.Conn, cache *Cache) {
 	reader := bufio.NewReader(conn)
+
 	for {
 		tokens, err := parseRESP(reader)
 		if err != nil {
@@ -35,12 +36,31 @@ func handleClient(conn net.Conn, cache *Cache) {
 		}
 
 		response, err := executeCommand(tokens, cache)
-
 		if err != nil {
-			conn.Write([]byte(err.Error() + "\n"))
+			writeError(conn, err.Error())
 			continue
 		}
-		err = writeSimpleString(conn, response)
+
+		switch response.Type {
+		case SimpleString:
+			err = writeSimpleString(conn, response.Value)
+
+		case BulkString:
+			err = writeBulkString(conn, response.Value)
+
+		case Integer:
+			err = writeInteger(conn, response.Integer)
+
+		case NullBulkString:
+			err = writeNullBulkString(conn)
+
+		case Error:
+			err = writeError(conn, response.Value)
+
+		default:
+			err = writeError(conn, "Unknown response type")
+		}
+
 		if err != nil {
 			fmt.Println("Write error:", err)
 			break
