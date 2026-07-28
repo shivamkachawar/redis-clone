@@ -189,6 +189,13 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 		length := cache.Append(tokens[1], tokens[2])
 
 		return strconv.Itoa(length), nil
+	case "STRLEN":
+		if len(tokens) != 2 {
+			return "", fmt.Errorf("Error: STRLEN requires exactly one argument")
+		}
+		length := cache.Strlen(tokens[1])
+
+		return strconv.Itoa(length), nil
 	}
 
 	return "", fmt.Errorf("Error: Unknown command")

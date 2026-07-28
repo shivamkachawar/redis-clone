@@ -211,3 +211,13 @@ func (c *Cache) Append(key string, value string) int {
 
 	return len(entry.Value)
 }
+func (c *Cache) Strlen(key string) int {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return 0
+	}
+	return len(entry.Value)
+}
