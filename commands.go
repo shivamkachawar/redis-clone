@@ -204,6 +204,20 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		return NewBulkString(oldValue), nil
 	case "COMMAND":
 		return NewSimpleString("OK"), nil
+	case "KEYS":
+		if len(tokens) != 2 {
+			return Response{}, fmt.Errorf("ERR wrong number of arguments for 'KEYS' command")
+		}
+		if tokens[1] != "*" {
+			return Response{}, fmt.Errorf("ERR only KEYS * is currently supported")
+		}
+
+		keys := cache.Keys()
+		responses := make([]Response, 0, len(keys))
+		for _, key := range keys {
+			responses = append(responses, NewBulkString(key))
+		}
+		return NewArray(responses), nil
 	}
 
 	return Response{}, fmt.Errorf("Error: Unknown command")

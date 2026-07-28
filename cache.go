@@ -254,3 +254,17 @@ func (c *Cache) GetSet(key string, value string) (string, bool) {
 	}
 	return oldValue, true
 }
+func (c *Cache) Keys() []string {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	keys := make([]string, 0, len(c.data))
+
+	for key := range c.data {
+		_, exists := c.getEntry(key)
+		if exists {
+			keys = append(keys, key)
+		}
+	}
+	return keys
+}
