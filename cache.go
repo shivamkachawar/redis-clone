@@ -97,11 +97,20 @@ func (c *Cache) Get(key string) (string, bool) {
 	return entry.Value, true
 }
 
-func (c *Cache) Delete(key string) {
+func (c *Cache) Delete(keys []string) int {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
+	deleted := 0
 
-	delete(c.data, key)
+	for _, key := range keys {
+		_, exists := c.getEntry(key)
+		if exists {
+			delete(c.data, key)
+			deleted++
+		}
+	}
+
+	return deleted
 }
 
 func (c *Cache) Exists(key string) bool {

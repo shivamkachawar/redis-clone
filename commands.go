@@ -52,12 +52,11 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 		}
 		return NewBulkString(value), nil
 	case "DEL":
-		if len(tokens) != 2 {
+		if len(tokens) < 2 {
 			return Response{}, fmt.Errorf("Error: DELETE command requires a key")
 		}
-		key := tokens[1]
-		cache.Delete(key)
-		return NewSimpleString("OK"), nil
+		count := cache.Delete(tokens[1:])
+		return NewInteger(count), nil
 	case "EXPIRE":
 		if len(tokens) != 3 {
 			return Response{}, fmt.Errorf("Error: EXPIRE command requires a key and a time in seconds")
