@@ -35,13 +35,12 @@ func handleClient(conn net.Conn, cache *Cache) {
 		}
 
 		response, err := executeCommand(tokens, cache)
-		fmt.Printf("Response: %q\n", response)
-		fmt.Printf("Error: %v\n", err)
+
 		if err != nil {
 			conn.Write([]byte(err.Error() + "\n"))
 			continue
 		}
-		_, err = conn.Write([]byte(response + "\n"))
+		err = writeSimpleString(conn, response)
 		if err != nil {
 			fmt.Println("Write error:", err)
 			break

@@ -206,6 +206,8 @@ func executeCommand(tokens []string, cache *Cache) (string, error) {
 			return "(nil)", nil
 		}
 		return oldValue, nil
+	case "COMMAND":
+		return "OK", nil
 	}
 
 	return "", fmt.Errorf("Error: Unknown command")
