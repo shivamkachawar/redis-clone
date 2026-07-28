@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"strings"
@@ -26,17 +27,15 @@ func main() {
 	}
 }
 func handleClient(conn net.Conn, cache *Cache) {
+	reader := bufio.NewReader(conn)
 	for {
-		buffer := make([]byte, 1024)
-		n, err := conn.Read(buffer)
-
+		line, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println("Client Disconnected : ", conn.RemoteAddr())
+			fmt.Println("Client Disconnected:", conn.RemoteAddr())
 			break
 		}
 
-		message := string(buffer[:n])
-		cleanedMessage := strings.TrimSpace(message)
+		cleanedMessage := strings.TrimSpace(line)
 		tokens := strings.Fields(cleanedMessage)
 
 		if len(tokens) == 0 {
@@ -48,6 +47,10 @@ func handleClient(conn net.Conn, cache *Cache) {
 			conn.Write([]byte(err.Error() + "\n"))
 			continue
 		}
-		conn.Write([]byte(response + "\n"))
+		_, err = conn.Write([]byte(response + "\n"))
+		if err != nil {
+			fmt.Println("Write error:", err)
+			break
+		}
 	}
 }
