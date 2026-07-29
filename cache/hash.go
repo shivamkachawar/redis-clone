@@ -41,3 +41,23 @@ func (c *Cache) HSet(key, field, value string) (int, error) {
 
 	return 1, nil
 }
+
+func (c *Cache) HGet(key, field string) (string, bool, error) {
+	entry, exists := c.getEntry(key)
+
+	if !exists {
+		return "", false, nil
+	}
+	hash, ok := entry.Value.(*protocol.HashValue)
+
+	if !ok {
+		return "", false, protocol.ErrWrongType
+	}
+	value, exists := hash.Fields[field]
+
+	if !exists {
+		return "", false, nil
+	}
+
+	return value, true, nil
+}
