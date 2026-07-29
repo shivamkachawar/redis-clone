@@ -96,3 +96,15 @@ func (c *Cache) HExists(key, field string) (bool, error) {
 
 	return exists, nil
 }
+func (c *Cache) HLen(key string) (int, error) {
+	entry, exists := c.getEntry(key)
+
+	if !exists {
+		return 0, nil
+	}
+	hash, ok := entry.Value.(*protocol.HashValue)
+	if !ok {
+		return 0, protocol.ErrWrongType
+	}
+	return len(hash.Fields), nil
+}
