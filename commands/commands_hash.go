@@ -134,3 +134,25 @@ func executeHINCRBY(tokens []string, cache *cache.Cache) (protocol.Response, err
 
 	return protocol.NewInteger(newValue), nil
 }
+func executeHMGET(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) < 3 {
+		return protocol.Response{}, fmt.Errorf("ERR wrong number of arguments for 'HMGET' command")
+	}
+
+	elements := make([]protocol.Response, 0, len(tokens)-2)
+
+	for i := 2; i < len(tokens); i++ {
+		value, found, err := cache.HGet(tokens[1], tokens[i])
+		if err != nil {
+			return protocol.Response{}, err
+		}
+
+		if !found {
+			elements = append(elements, protocol.NewNullBulkString())
+		} else {
+			elements = append(elements, protocol.NewBulkString(value))
+		}
+	}
+
+	return protocol.NewArray(elements), nil
+}
