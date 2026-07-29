@@ -39,3 +39,15 @@ func executeSISMEMBER(tokens []string, cache *cache.Cache) (protocol.Response, e
 
 	return protocol.NewInteger(0), nil
 }
+func executeSCARD(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) != 2 {
+		return protocol.Response{}, protocol.ErrWrongNumberOfArguments
+	}
+
+	count, err := cache.SCard(tokens[1])
+	if err != nil {
+		return protocol.Response{}, err
+	}
+
+	return protocol.NewInteger(count), nil
+}

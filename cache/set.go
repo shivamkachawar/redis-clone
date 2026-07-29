@@ -57,3 +57,20 @@ func (c *Cache) SIsMember(key, member string) (bool, error) {
 	_, exists = set.Members[member]
 	return exists, nil
 }
+func (c *Cache) SCard(key string) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+
+	if !exists {
+		return 0, nil
+	}
+
+	set, ok := entry.Value.(*protocol.SetValue)
+	if !ok {
+		return 0, protocol.ErrWrongType
+	}
+
+	return len(set.Members), nil
+}
