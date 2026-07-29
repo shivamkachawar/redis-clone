@@ -21,3 +21,9 @@ type HashValue struct {
 }
 
 func (*HashValue) isRedisValue() {}
+
+type SetValue struct {
+	Members map[string]struct{}
+}
+
+func (*SetValue) isRedisValue() {}

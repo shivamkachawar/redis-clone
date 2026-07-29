@@ -87,6 +87,10 @@ func ExecuteCommand(tokens []string, cache *cache.Cache) (protocol.Response, err
 		return executeHSETNX(tokens, cache)
 	case "HSTRLEN":
 		return executeHSTRLEN(tokens, cache)
+	case "SADD":
+		return executeSADD(tokens, cache)
+	case "SISMEMBER":
+		return executeSISMEMBER(tokens, cache)
 	default:
 		return protocol.Response{}, fmt.Errorf("Error: Unknown command")
 	}
