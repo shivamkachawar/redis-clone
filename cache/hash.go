@@ -82,3 +82,17 @@ func (c *Cache) HDel(key, field string) (int, error) {
 	return 1, nil
 
 }
+func (c *Cache) HExists(key, field string) (bool, error) {
+	entry, exists := c.getEntry(key)
+
+	if !exists {
+		return false, nil
+	}
+	hash, ok := entry.Value.(*protocol.HashValue)
+	if !ok {
+		return false, protocol.ErrWrongType
+	}
+	_, exists = hash.Fields[field]
+
+	return exists, nil
+}

@@ -40,3 +40,16 @@ func executeHDEL(tokens []string, cache *cache.Cache) (protocol.Response, error)
 	}
 	return protocol.NewInteger(count), nil
 }
+func executeHEXISTS(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) < 3 {
+		return protocol.Response{}, fmt.Errorf("ERR wrong number of arguments for 'HEXISTS' command")
+	}
+	exists, err := cache.HExists(tokens[1], tokens[2])
+	if err != nil {
+		return protocol.Response{}, err
+	}
+	if !exists {
+		return protocol.NewInteger(0), nil
+	}
+	return protocol.NewInteger(1), nil
+}
