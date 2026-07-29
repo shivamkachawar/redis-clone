@@ -63,6 +63,8 @@ func ExecuteCommand(tokens []string, cache *cache.Cache) (protocol.Response, err
 		return executeRPUSH(tokens, cache)
 	case "RPOP":
 		return executeRPOP(tokens, cache)
+	case "HSET":
+		return executeHSET(tokens, cache)
 	default:
 		return protocol.Response{}, fmt.Errorf("Error: Unknown command")
 	}

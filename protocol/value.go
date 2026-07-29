@@ -3,6 +3,7 @@ package protocol
 type RedisValue interface {
 	isRedisValue()
 }
+
 type StringValue struct {
 	Value string
 }
@@ -14,3 +15,9 @@ type ListValue struct {
 }
 
 func (*ListValue) isRedisValue() {}
+
+type HashValue struct {
+	Fields map[string]string
+}
+
+func (*HashValue) isRedisValue() {}
