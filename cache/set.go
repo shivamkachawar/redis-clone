@@ -74,3 +74,25 @@ func (c *Cache) SCard(key string) (int, error) {
 
 	return len(set.Members), nil
 }
+func (c *Cache) SMembers(key string) ([]string, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return []string{}, nil
+	}
+
+	set, ok := entry.Value.(*protocol.SetValue)
+	if !ok {
+		return nil, protocol.ErrWrongType
+	}
+
+	members := make([]string, 0, len(set.Members))
+
+	for member := range set.Members {
+		members = append(members, member)
+	}
+
+	return members, nil
+}

@@ -51,3 +51,21 @@ func executeSCARD(tokens []string, cache *cache.Cache) (protocol.Response, error
 
 	return protocol.NewInteger(count), nil
 }
+func executeSMEMBERS(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) != 2 {
+		return protocol.Response{}, protocol.ErrWrongNumberOfArguments
+	}
+
+	members, err := cache.SMembers(tokens[1])
+	if err != nil {
+		return protocol.Response{}, err
+	}
+
+	elements := make([]protocol.Response, 0, len(members))
+
+	for _, member := range members {
+		elements = append(elements, protocol.NewBulkString(member))
+	}
+
+	return protocol.NewArray(elements), nil
+}
