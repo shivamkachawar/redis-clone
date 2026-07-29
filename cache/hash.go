@@ -1,6 +1,9 @@
 package cache
 
-import "go-redis/protocol"
+import (
+	"go-redis/protocol"
+	"strconv"
+)
 
 func (c *Cache) getOrCreateHash(key string) (*protocol.HashValue, error) {
 	entry, exists := c.getEntry(key)
@@ -184,4 +187,26 @@ func (c *Cache) HVals(key string) ([]string, error) {
 	}
 
 	return values, nil
+}
+func (c *Cache) HIncrBy(key, field string, increment int) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	hash, err := c.getOrCreateHash(key)
+	if err != nil {
+		return 0, err
+	}
+	value, exists := hash.Fields[field]
+
+	if !exists {
+		hash.Fields[field] = strconv.Itoa(increment)
+		return increment, nil
+	}
+	currentValue, err := strconv.Atoi(value)
+	if err != nil {
+		return 0, protocol.ErrHashValueNotInteger
+	}
+	newValue := currentValue + increment
+	hash.Fields[field] = strconv.Itoa(newValue)
+	return newValue, nil
 }

@@ -79,6 +79,8 @@ func ExecuteCommand(tokens []string, cache *cache.Cache) (protocol.Response, err
 		return executeHKEYS(tokens, cache)
 	case "HVALS":
 		return executeHVALS(tokens, cache)
+	case "HINCRBY":
+		return executeHINCRBY(tokens, cache)
 	default:
 		return protocol.Response{}, fmt.Errorf("Error: Unknown command")
 	}

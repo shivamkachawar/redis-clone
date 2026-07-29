@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go-redis/cache"
 	"go-redis/protocol"
+	"strconv"
 )
 
 func executeHSET(tokens []string, cache *cache.Cache) (protocol.Response, error) {
@@ -115,4 +116,21 @@ func executeHVALS(tokens []string, cache *cache.Cache) (protocol.Response, error
 	}
 
 	return protocol.NewArray(elements), nil
+}
+func executeHINCRBY(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) < 4 {
+		return protocol.Response{}, fmt.Errorf("ERR wrong number of arguments for 'HINCRBY' command")
+	}
+
+	increment, err := strconv.Atoi(tokens[3])
+	if err != nil {
+		return protocol.Response{}, fmt.Errorf("ERR value is not an integer")
+	}
+
+	newValue, err := cache.HIncrBy(tokens[1], tokens[2], increment)
+	if err != nil {
+		return protocol.Response{}, err
+	}
+
+	return protocol.NewInteger(newValue), nil
 }
