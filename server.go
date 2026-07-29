@@ -3,6 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"go-redis/cache"
+	"go-redis/commands"
+	"go-redis/protocol"
 	"log"
 	"net"
 	"strings"
@@ -14,7 +17,7 @@ const (
 )
 
 func main() {
-	cache := NewCache()
+	cache := cache.NewCache()
 
 	aof, err := NewAOF("appendonly.aof")
 	if err != nil {
@@ -55,17 +58,17 @@ func main() {
 		go handleClient(conn, cache, aof)
 	}
 }
-func handleClient(conn net.Conn, cache *Cache, aof *AOF) {
+func handleClient(conn net.Conn, cache *cache.Cache, aof *AOF) {
 	reader := bufio.NewReader(conn)
 
 	for {
-		tokens, err := parseRESP(reader)
+		tokens, err := protocol.ParseRESP(reader)
 		if err != nil {
 			fmt.Println("Parse error:", err)
 			break
 		}
 
-		response, err := executeCommand(tokens, cache)
+		response, err := commands.ExecuteCommand(tokens, cache)
 		if err == nil && isWriteCommand(tokens[0]) {
 			if err := aof.Write(tokens); err != nil {
 				fmt.Println("AOF write error:", err)
@@ -73,10 +76,10 @@ func handleClient(conn net.Conn, cache *Cache, aof *AOF) {
 			}
 		}
 		if err != nil {
-			writeError(conn, err.Error())
+			protocol.WriteError(conn, err.Error())
 			continue
 		}
-		err = writeResponse(conn, response)
+		err = protocol.WriteResponse(conn, response)
 
 		if err != nil {
 			fmt.Println("Write error:", err)

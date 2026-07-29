@@ -1,6 +1,8 @@
-package main
+package cache
 
-import "time"
+import (
+	"time"
+)
 
 func (c *Cache) Expire(key string, seconds int) bool {
 	c.mutex.Lock()

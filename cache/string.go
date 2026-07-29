@@ -1,7 +1,8 @@
-package main
+package cache
 
 import (
 	"fmt"
+	"go-redis/protocol"
 	"strconv"
 	"time"
 )
@@ -11,7 +12,7 @@ func (c *Cache) Set(key string, value string, ttl int) {
 	defer c.mutex.Unlock()
 
 	entry := Entry{
-		Value: &StringValue{
+		Value: &protocol.StringValue{
 			Value: value,
 		},
 	}
@@ -32,9 +33,9 @@ func (c *Cache) Get(key string) (string, bool, error) {
 		return "", false, nil
 	}
 
-	str, ok := entry.Value.(*StringValue)
+	str, ok := entry.Value.(*protocol.StringValue)
 	if !ok {
-		return "", true, ErrWrongType
+		return "", true, protocol.ErrWrongType
 	}
 
 	return str.Value, true, nil
@@ -51,8 +52,8 @@ func (c *Cache) IncrementBy(key string, delta int) (int, error) {
 func (c *Cache) DecrementBy(key string, delta int) (int, error) {
 	return c.changeBy(key, -delta)
 }
-func (c *Cache) MGet(keys []string) ([]Response, error) {
-	responses := make([]Response, len(keys))
+func (c *Cache) MGet(keys []string) ([]protocol.Response, error) {
+	responses := make([]protocol.Response, len(keys))
 
 	for i, key := range keys {
 		value, exists, err := c.Get(key)
@@ -60,9 +61,9 @@ func (c *Cache) MGet(keys []string) ([]Response, error) {
 			return nil, err
 		}
 		if exists {
-			responses[i] = NewBulkString(value)
+			responses[i] = protocol.NewBulkString(value)
 		} else {
-			responses[i] = NewNullBulkString()
+			responses[i] = protocol.NewNullBulkString()
 		}
 	}
 
@@ -74,7 +75,7 @@ func (c *Cache) MSet(keys []string, values []string) {
 
 	for i := 0; i < len(keys); i++ {
 		c.data[keys[i]] = Entry{
-			Value: &StringValue{
+			Value: &protocol.StringValue{
 				Value: values[i],
 			},
 		}
@@ -88,13 +89,13 @@ func (c *Cache) Append(key string, value string) int {
 
 	if !exists {
 		c.data[key] = Entry{
-			Value: &StringValue{
+			Value: &protocol.StringValue{
 				Value: value,
 			},
 		}
 		return len(value)
 	}
-	str, err := getString(entry)
+	str, err := c.GetString(entry)
 	if err != nil {
 		return 0
 	}
@@ -113,7 +114,7 @@ func (c *Cache) Strlen(key string) int {
 	if !exists {
 		return 0
 	}
-	str, err := getString(entry)
+	str, err := c.GetString(entry)
 	if err != nil {
 		return 0
 	}
@@ -128,20 +129,20 @@ func (c *Cache) GetSet(key string, value string) (string, bool) {
 
 	if !exists {
 		c.data[key] = Entry{
-			Value: &StringValue{
+			Value: &protocol.StringValue{
 				Value: value,
 			},
 		}
 		return "", false
 	}
-	str, err := getString(entry)
+	str, err := c.GetString(entry)
 	if err != nil {
 		return "", false
 	}
 
 	oldValue := str.Value
 	c.data[key] = Entry{
-		Value: &StringValue{
+		Value: &protocol.StringValue{
 			Value: value,
 		},
 	}
@@ -157,13 +158,13 @@ func (c *Cache) changeBy(key string, delta int) (int, error) {
 	// Key doesn't exist
 	if !exists {
 		c.data[key] = Entry{
-			Value: &StringValue{
+			Value: &protocol.StringValue{
 				Value: strconv.Itoa(delta),
 			},
 		}
 		return delta, nil
 	}
-	str, err := getString(entry)
+	str, err := c.GetString(entry)
 	if err != nil {
 		return 0, err
 	}
@@ -181,10 +182,10 @@ func (c *Cache) changeBy(key string, delta int) (int, error) {
 
 	return value, nil
 }
-func getString(entry *Entry) (*StringValue, error) {
-	str, ok := entry.Value.(*StringValue)
+func (c *Cache) GetString(entry *Entry) (*protocol.StringValue, error) {
+	str, ok := entry.Value.(*protocol.StringValue)
 	if !ok {
-		return nil, ErrWrongType
+		return nil, protocol.ErrWrongType
 	}
 	return str, nil
 }

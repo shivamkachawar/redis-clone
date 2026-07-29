@@ -1,10 +1,14 @@
-package main
+package cache
 
-func (c *Cache) getOrCreateList(key string) (*ListValue, error) {
+import (
+	"go-redis/protocol"
+)
+
+func (c *Cache) getOrCreateList(key string) (*protocol.ListValue, error) {
 	entry, exists := c.getEntry(key)
 
 	if !exists {
-		list := &ListValue{
+		list := &protocol.ListValue{
 			Values: []string{},
 		}
 
@@ -15,9 +19,9 @@ func (c *Cache) getOrCreateList(key string) (*ListValue, error) {
 		return list, nil
 	}
 
-	list, ok := entry.Value.(*ListValue)
+	list, ok := entry.Value.(*protocol.ListValue)
 	if !ok {
-		return nil, ErrWrongType
+		return nil, protocol.ErrWrongType
 	}
 
 	return list, nil
@@ -46,9 +50,9 @@ func (c *Cache) LRange(key string, start int, stop int) ([]string, error) {
 	if !exists {
 		return []string{}, nil
 	}
-	list, ok := entry.Value.(*ListValue)
+	list, ok := entry.Value.(*protocol.ListValue)
 	if !ok {
-		return nil, ErrWrongType
+		return nil, protocol.ErrWrongType
 	}
 	if len(list.Values) == 0 {
 		return []string{}, nil
@@ -87,23 +91,23 @@ func (c *Cache) LLen(key string) (int, error) {
 		return 0, nil
 	}
 
-	list, ok := entry.Value.(*ListValue)
+	list, ok := entry.Value.(*protocol.ListValue)
 	if !ok {
-		return 0, ErrWrongType
+		return 0, protocol.ErrWrongType
 	}
 
 	return len(list.Values), nil
 }
-func (c *Cache) getList(key string) (*ListValue, bool, error) {
+func (c *Cache) getList(key string) (*protocol.ListValue, bool, error) {
 	entry, exists := c.getEntry(key)
 
 	if !exists {
 		return nil, false, nil
 	}
 
-	list, ok := entry.Value.(*ListValue)
+	list, ok := entry.Value.(*protocol.ListValue)
 	if !ok {
-		return nil, true, ErrWrongType
+		return nil, true, protocol.ErrWrongType
 	}
 
 	if len(list.Values) == 0 {

@@ -1,4 +1,4 @@
-package main
+package cache
 
 func (c *Cache) Delete(keys []string) int {
 	c.mutex.Lock()

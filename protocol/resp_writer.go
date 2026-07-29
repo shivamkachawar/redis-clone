@@ -1,4 +1,4 @@
-package main
+package protocol
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ func writeSimpleString(conn net.Conn, message string) error {
 
 	return err
 }
-func writeError(conn net.Conn, message string) error {
+func WriteError(conn net.Conn, message string) error {
 	_, err := fmt.Fprintf(conn, "-ERR %s\r\n", message)
 	return err
 }
@@ -34,7 +34,7 @@ func writeArray(conn net.Conn, elements []Response) error {
 	}
 
 	for _, element := range elements {
-		err := writeResponse(conn, element)
+		err := WriteResponse(conn, element)
 		if err != nil {
 			return err
 		}
@@ -42,7 +42,7 @@ func writeArray(conn net.Conn, elements []Response) error {
 
 	return nil
 }
-func writeResponse(conn net.Conn, response Response) error {
+func WriteResponse(conn net.Conn, response Response) error {
 	switch response.Type {
 
 	case SimpleString:
@@ -61,7 +61,7 @@ func writeResponse(conn net.Conn, response Response) error {
 		return writeArray(conn, response.Elements)
 
 	case Error:
-		return writeError(conn, response.Value)
+		return WriteError(conn, response.Value)
 
 	default:
 		return fmt.Errorf("unknown response type")

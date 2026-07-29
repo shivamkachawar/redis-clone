@@ -1,14 +1,16 @@
-package main
+package commands
 
 import (
 	"fmt"
+	"go-redis/cache"
+	"go-redis/protocol"
 )
 
-func executeCommand(tokens []string, cache *Cache) (Response, error) {
+func ExecuteCommand(tokens []string, cache *cache.Cache) (protocol.Response, error) {
 	command := tokens[0]
 	switch command {
 	case "PING":
-		return NewSimpleString("PONG"), nil
+		return protocol.NewSimpleString("PONG"), nil
 	case "SET":
 		return executeSET(tokens, cache)
 	case "GET":
@@ -42,7 +44,7 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 	case "GETSET":
 		return executeGETSET(tokens, cache)
 	case "COMMAND":
-		return NewSimpleString("OK"), nil
+		return protocol.NewSimpleString("OK"), nil
 	case "KEYS":
 		return executeKEYS(tokens, cache)
 	case "DBSIZE":
@@ -62,6 +64,6 @@ func executeCommand(tokens []string, cache *Cache) (Response, error) {
 	case "RPOP":
 		return executeRPOP(tokens, cache)
 	default:
-		return Response{}, fmt.Errorf("Error: Unknown command")
+		return protocol.Response{}, fmt.Errorf("Error: Unknown command")
 	}
 }

@@ -1,4 +1,4 @@
-package main
+package protocol
 
 import (
 	"bufio"
@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func parseRESP(reader *bufio.Reader) ([]string, error) {
+func ParseRESP(reader *bufio.Reader) ([]string, error) {
 	line, err := reader.ReadString('\n')
 	if err != nil {
 		return nil, err

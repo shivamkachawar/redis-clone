@@ -1,12 +1,13 @@
-package main
+package cache
 
 import (
+	"go-redis/protocol"
 	"sync"
 	"time"
 )
 
 type Entry struct {
-	Value  RedisValue
+	Value  protocol.RedisValue
 	Expiry time.Time
 }
 
