@@ -83,6 +83,8 @@ func ExecuteCommand(tokens []string, cache *cache.Cache) (protocol.Response, err
 		return executeHINCRBY(tokens, cache)
 	case "HMGET":
 		return executeHMGET(tokens, cache)
+	case "HSETNX":
+		return executeHSETNX(tokens, cache)
 	default:
 		return protocol.Response{}, fmt.Errorf("Error: Unknown command")
 	}

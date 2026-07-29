@@ -210,3 +210,18 @@ func (c *Cache) HIncrBy(key, field string, increment int) (int, error) {
 	hash.Fields[field] = strconv.Itoa(newValue)
 	return newValue, nil
 }
+func (c *Cache) HSetNX(key, field, value string) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	hash, err := c.getOrCreateHash(key)
+	if err != nil {
+		return 0, err
+	}
+	_, exists := hash.Fields[field]
+	if exists {
+		return 0, nil
+	}
+	hash.Fields[field] = value
+	return 1, nil
+}

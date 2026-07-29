@@ -163,3 +163,15 @@ func executeHMGET(tokens []string, cache *cache.Cache) (protocol.Response, error
 
 	return protocol.NewArray(elements), nil
 }
+func executeHSETNX(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) != 4 {
+		return protocol.Response{}, fmt.Errorf("ERR wrong number of arguments for 'HSETNX' command")
+	}
+
+	count, err := cache.HSetNX(tokens[1], tokens[2], tokens[3])
+	if err != nil {
+		return protocol.Response{}, err
+	}
+
+	return protocol.NewInteger(count), nil
+}
