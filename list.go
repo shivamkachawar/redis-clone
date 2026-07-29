@@ -31,7 +31,9 @@ func (c *Cache) LPush(key string, values []string) (int, error) {
 		return 0, err
 	}
 
-	list.Values = append(values, list.Values...)
+	for _, value := range values {
+		list.Values = append([]string{value}, list.Values...)
+	}
 
 	return len(list.Values), nil
 }
