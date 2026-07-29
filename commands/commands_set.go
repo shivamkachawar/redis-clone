@@ -69,3 +69,22 @@ func executeSMEMBERS(tokens []string, cache *cache.Cache) (protocol.Response, er
 
 	return protocol.NewArray(elements), nil
 }
+func executeSREM(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) < 3 {
+		return protocol.Response{}, protocol.ErrWrongNumberOfArguments
+	}
+
+	key := tokens[1]
+	removed := 0
+
+	for _, member := range tokens[2:] {
+		count, err := cache.SRem(key, member)
+		if err != nil {
+			return protocol.Response{}, err
+		}
+
+		removed += count
+	}
+
+	return protocol.NewInteger(removed), nil
+}

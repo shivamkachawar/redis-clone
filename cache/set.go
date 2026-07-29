@@ -96,3 +96,25 @@ func (c *Cache) SMembers(key string) ([]string, error) {
 
 	return members, nil
 }
+func (c *Cache) SRem(key, member string) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return 0, nil
+	}
+
+	set, ok := entry.Value.(*protocol.SetValue)
+	if !ok {
+		return 0, protocol.ErrWrongType
+	}
+
+	if _, exists := set.Members[member]; !exists {
+		return 0, nil
+	}
+
+	delete(set.Members, member)
+
+	return 1, nil
+}

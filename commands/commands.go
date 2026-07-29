@@ -95,6 +95,8 @@ func ExecuteCommand(tokens []string, cache *cache.Cache) (protocol.Response, err
 		return executeSCARD(tokens, cache)
 	case "SMEMBERS":
 		return executeSMEMBERS(tokens, cache)
+	case "SREM":
+		return executeSREM(tokens, cache)
 	default:
 		return protocol.Response{}, fmt.Errorf("Error: Unknown command")
 	}
