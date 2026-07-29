@@ -8,14 +8,21 @@ import (
 )
 
 func executeHSET(tokens []string, cache *cache.Cache) (protocol.Response, error) {
-	if len(tokens) < 4 {
+	if len(tokens) < 4 || (len(tokens)-2)%2 != 0 {
 		return protocol.Response{}, fmt.Errorf("ERR wrong number of arguments for 'HSET' command")
 	}
-	count, err := cache.HSet(tokens[1], tokens[2], tokens[3])
-	if err != nil {
-		return protocol.Response{}, err
+	added := 0
+
+	for i := 2; i < len(tokens); i += 2 {
+		count, err := cache.HSet(tokens[1], tokens[i], tokens[i+1])
+		if err != nil {
+			return protocol.Response{}, err
+		}
+
+		added += count
 	}
-	return protocol.NewInteger(count), nil
+
+	return protocol.NewInteger(added), nil
 }
 func executeHGET(tokens []string, cache *cache.Cache) (protocol.Response, error) {
 	if len(tokens) < 3 {
