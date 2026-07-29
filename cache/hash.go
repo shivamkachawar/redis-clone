@@ -141,3 +141,47 @@ func (c *Cache) HGetAll(key string) ([]string, error) {
 	}
 	return result, nil
 }
+func (c *Cache) HKeys(key string) ([]string, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return []string{}, nil
+	}
+
+	hash, ok := entry.Value.(*protocol.HashValue)
+	if !ok {
+		return nil, protocol.ErrWrongType
+	}
+
+	keys := []string{}
+
+	for field := range hash.Fields {
+		keys = append(keys, field)
+	}
+
+	return keys, nil
+}
+func (c *Cache) HVals(key string) ([]string, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return []string{}, nil
+	}
+
+	hash, ok := entry.Value.(*protocol.HashValue)
+	if !ok {
+		return nil, protocol.ErrWrongType
+	}
+
+	values := []string{}
+
+	for _, value := range hash.Fields {
+		values = append(values, value)
+	}
+
+	return values, nil
+}

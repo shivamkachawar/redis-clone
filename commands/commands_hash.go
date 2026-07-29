@@ -80,3 +80,39 @@ func executeHGETALL(tokens []string, cache *cache.Cache) (protocol.Response, err
 	return protocol.NewArray(elements), nil
 
 }
+func executeHKEYS(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) < 2 {
+		return protocol.Response{}, fmt.Errorf("ERR wrong number of arguments for 'HKEYS' command")
+	}
+
+	keys, err := cache.HKeys(tokens[1])
+	if err != nil {
+		return protocol.Response{}, err
+	}
+
+	elements := make([]protocol.Response, 0, len(keys))
+
+	for _, key := range keys {
+		elements = append(elements, protocol.NewBulkString(key))
+	}
+
+	return protocol.NewArray(elements), nil
+}
+func executeHVALS(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) < 2 {
+		return protocol.Response{}, fmt.Errorf("ERR wrong number of arguments for 'HVALS' command")
+	}
+
+	values, err := cache.HVals(tokens[1])
+	if err != nil {
+		return protocol.Response{}, err
+	}
+
+	elements := make([]protocol.Response, 0, len(values))
+
+	for _, key := range values {
+		elements = append(elements, protocol.NewBulkString(key))
+	}
+
+	return protocol.NewArray(elements), nil
+}
