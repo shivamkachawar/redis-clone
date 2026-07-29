@@ -175,3 +175,15 @@ func executeHSETNX(tokens []string, cache *cache.Cache) (protocol.Response, erro
 
 	return protocol.NewInteger(count), nil
 }
+func executeHSTRLEN(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) != 3 {
+		return protocol.Response{}, fmt.Errorf("ERR wrong number of arguments for 'HSTRLEN' command")
+	}
+
+	length, err := cache.HStrLen(tokens[1], tokens[2])
+	if err != nil {
+		return protocol.Response{}, err
+	}
+
+	return protocol.NewInteger(length), nil
+}

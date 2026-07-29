@@ -225,3 +225,15 @@ func (c *Cache) HSetNX(key, field, value string) (int, error) {
 	hash.Fields[field] = value
 	return 1, nil
 }
+func (c *Cache) HStrLen(key, field string) (int, error) {
+	value, found, err := c.HGet(key, field)
+	if err != nil {
+		return 0, err
+	}
+
+	if !found {
+		return 0, nil
+	}
+
+	return len(value), nil
+}
