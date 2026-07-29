@@ -73,6 +73,8 @@ func ExecuteCommand(tokens []string, cache *cache.Cache) (protocol.Response, err
 		return executeHEXISTS(tokens, cache)
 	case "HLEN":
 		return executeHLEN(tokens, cache)
+	case "HGETALL":
+		return executeHGETALL(tokens, cache)
 	default:
 		return protocol.Response{}, fmt.Errorf("Error: Unknown command")
 	}

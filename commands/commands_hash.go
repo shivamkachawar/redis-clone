@@ -63,3 +63,20 @@ func executeHLEN(tokens []string, cache *cache.Cache) (protocol.Response, error)
 	}
 	return protocol.NewInteger(count), nil
 }
+func executeHGETALL(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) < 2 {
+		return protocol.Response{}, fmt.Errorf("ERR wrong number of arguments for 'HGETALL' command")
+	}
+	values, err := cache.HGetAll(tokens[1])
+	if err != nil {
+		return protocol.Response{}, err
+	}
+	elements := make([]protocol.Response, 0, len(values))
+
+	for _, value := range values {
+		elements = append(elements, protocol.NewBulkString(value))
+	}
+
+	return protocol.NewArray(elements), nil
+
+}

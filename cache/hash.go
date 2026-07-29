@@ -24,6 +24,7 @@ func (c *Cache) getOrCreateHash(key string) (*protocol.HashValue, error) {
 }
 
 func (c *Cache) HSet(key, field, value string) (int, error) {
+
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -43,6 +44,9 @@ func (c *Cache) HSet(key, field, value string) (int, error) {
 }
 
 func (c *Cache) HGet(key, field string) (string, bool, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	entry, exists := c.getEntry(key)
 
 	if !exists {
@@ -63,6 +67,9 @@ func (c *Cache) HGet(key, field string) (string, bool, error) {
 }
 
 func (c *Cache) HDel(key, field string) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	entry, exists := c.getEntry(key)
 
 	if !exists {
@@ -83,6 +90,9 @@ func (c *Cache) HDel(key, field string) (int, error) {
 
 }
 func (c *Cache) HExists(key, field string) (bool, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	entry, exists := c.getEntry(key)
 
 	if !exists {
@@ -97,6 +107,9 @@ func (c *Cache) HExists(key, field string) (bool, error) {
 	return exists, nil
 }
 func (c *Cache) HLen(key string) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	entry, exists := c.getEntry(key)
 
 	if !exists {
@@ -107,4 +120,24 @@ func (c *Cache) HLen(key string) (int, error) {
 		return 0, protocol.ErrWrongType
 	}
 	return len(hash.Fields), nil
+}
+func (c *Cache) HGetAll(key string) ([]string, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return []string{}, nil
+	}
+	hash, ok := entry.Value.(*protocol.HashValue)
+	if !ok {
+		return nil, protocol.ErrWrongType
+	}
+	result := []string{}
+
+	for field, value := range hash.Fields {
+		result = append(result, field)
+		result = append(result, value)
+	}
+	return result, nil
 }
