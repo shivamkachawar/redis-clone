@@ -61,3 +61,24 @@ func (c *Cache) HGet(key, field string) (string, bool, error) {
 
 	return value, true, nil
 }
+
+func (c *Cache) HDel(key, field string) (int, error) {
+	entry, exists := c.getEntry(key)
+
+	if !exists {
+		return 0, nil
+	}
+	hash, ok := entry.Value.(*protocol.HashValue)
+	if !ok {
+		return 0, protocol.ErrWrongType
+	}
+	_, exists = hash.Fields[field]
+
+	if !exists {
+		return 0, nil
+	}
+	delete(hash.Fields, field)
+
+	return 1, nil
+
+}

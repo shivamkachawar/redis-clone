@@ -30,3 +30,13 @@ func executeHGET(tokens []string, cache *cache.Cache) (protocol.Response, error)
 	return protocol.NewBulkString(value), nil
 
 }
+func executeHDEL(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) < 3 {
+		return protocol.Response{}, fmt.Errorf("ERR wrong number of arguments for 'HDEL' command")
+	}
+	count, err := cache.HDel(tokens[1], tokens[2])
+	if err != nil {
+		return protocol.Response{}, err
+	}
+	return protocol.NewInteger(count), nil
+}
