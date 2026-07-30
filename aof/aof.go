@@ -1,4 +1,4 @@
-package main
+package aof
 
 import (
 	"bufio"
@@ -23,6 +23,9 @@ func NewAOF(filename string) (*AOF, error) {
 	return &AOF{
 		file: file,
 	}, nil
+}
+func (a *AOF) Close() error {
+	return a.file.Close()
 }
 
 // writeRESP writes a RESP array to the given file. -> Helper Function for Write and Rewrite
