@@ -8,8 +8,6 @@ import (
 )
 
 func (c *Cache) Set(key string, value string, ttl int) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry := Entry{
 		Value: &protocol.StringValue{
@@ -25,8 +23,6 @@ func (c *Cache) Set(key string, value string, ttl int) {
 }
 
 func (c *Cache) Get(key string) (string, bool, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {
@@ -70,8 +66,6 @@ func (c *Cache) MGet(keys []string) ([]protocol.Response, error) {
 	return responses, nil
 }
 func (c *Cache) MSet(keys []string, values []string) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	for i := 0; i < len(keys); i++ {
 		c.data[keys[i]] = Entry{
@@ -82,8 +76,6 @@ func (c *Cache) MSet(keys []string, values []string) {
 	}
 }
 func (c *Cache) Append(key string, value string) int {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 
@@ -107,8 +99,6 @@ func (c *Cache) Append(key string, value string) int {
 	return len(str.Value)
 }
 func (c *Cache) Strlen(key string) int {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {
@@ -122,8 +112,6 @@ func (c *Cache) Strlen(key string) int {
 	return len(str.Value)
 }
 func (c *Cache) GetSet(key string, value string) (string, bool) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 
@@ -150,8 +138,6 @@ func (c *Cache) GetSet(key string, value string) (string, bool) {
 }
 
 func (c *Cache) changeBy(key string, delta int) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 

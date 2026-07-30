@@ -28,9 +28,6 @@ func (c *Cache) getOrCreateHash(key string) (*protocol.HashValue, error) {
 
 func (c *Cache) HSet(key, field, value string) (int, error) {
 
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
 	hash, err := c.getOrCreateHash(key)
 
 	if err != nil {
@@ -47,8 +44,6 @@ func (c *Cache) HSet(key, field, value string) (int, error) {
 }
 
 func (c *Cache) HGet(key, field string) (string, bool, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 
@@ -70,8 +65,6 @@ func (c *Cache) HGet(key, field string) (string, bool, error) {
 }
 
 func (c *Cache) HDel(key, field string) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 
@@ -93,8 +86,6 @@ func (c *Cache) HDel(key, field string) (int, error) {
 
 }
 func (c *Cache) HExists(key, field string) (bool, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 
@@ -110,8 +101,6 @@ func (c *Cache) HExists(key, field string) (bool, error) {
 	return exists, nil
 }
 func (c *Cache) HLen(key string) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 
@@ -125,8 +114,6 @@ func (c *Cache) HLen(key string) (int, error) {
 	return len(hash.Fields), nil
 }
 func (c *Cache) HGetAll(key string) ([]string, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {
@@ -145,8 +132,6 @@ func (c *Cache) HGetAll(key string) ([]string, error) {
 	return result, nil
 }
 func (c *Cache) HKeys(key string) ([]string, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {
@@ -167,8 +152,6 @@ func (c *Cache) HKeys(key string) ([]string, error) {
 	return keys, nil
 }
 func (c *Cache) HVals(key string) ([]string, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {
@@ -189,8 +172,6 @@ func (c *Cache) HVals(key string) ([]string, error) {
 	return values, nil
 }
 func (c *Cache) HIncrBy(key, field string, increment int) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	hash, err := c.getOrCreateHash(key)
 	if err != nil {
@@ -211,8 +192,6 @@ func (c *Cache) HIncrBy(key, field string, increment int) (int, error) {
 	return newValue, nil
 }
 func (c *Cache) HSetNX(key, field, value string) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	hash, err := c.getOrCreateHash(key)
 	if err != nil {

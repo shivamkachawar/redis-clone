@@ -24,8 +24,6 @@ func (c *Cache) getOrCreateSet(key string) (*protocol.SetValue, error) {
 }
 
 func (c *Cache) SAdd(key, member string) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	set, err := c.getOrCreateSet(key)
 
@@ -40,8 +38,6 @@ func (c *Cache) SAdd(key, member string) (int, error) {
 	return 1, nil
 }
 func (c *Cache) SIsMember(key, member string) (bool, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 
@@ -58,8 +54,6 @@ func (c *Cache) SIsMember(key, member string) (bool, error) {
 	return exists, nil
 }
 func (c *Cache) SCard(key string) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 
@@ -75,8 +69,6 @@ func (c *Cache) SCard(key string) (int, error) {
 	return len(set.Members), nil
 }
 func (c *Cache) SMembers(key string) ([]string, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {
@@ -97,8 +89,6 @@ func (c *Cache) SMembers(key string) ([]string, error) {
 	return members, nil
 }
 func (c *Cache) SRem(key, member string) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {

@@ -2,7 +2,6 @@ package cache
 
 import (
 	"go-redis/protocol"
-	"sync"
 	"time"
 )
 
@@ -12,8 +11,7 @@ type Entry struct {
 }
 
 type Cache struct {
-	data  map[string]Entry
-	mutex sync.RWMutex
+	data map[string]Entry
 }
 
 func NewCache() *Cache {
@@ -43,8 +41,6 @@ func (c *Cache) getEntry(key string) (*Entry, bool) {
 // Client APIs
 
 func (c *Cache) Entries() map[string]Entry {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entries := make(map[string]Entry)
 

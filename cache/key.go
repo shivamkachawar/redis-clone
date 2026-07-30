@@ -1,8 +1,7 @@
 package cache
 
 func (c *Cache) Delete(keys []string) int {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+
 	deleted := 0
 
 	for _, key := range keys {
@@ -17,8 +16,6 @@ func (c *Cache) Delete(keys []string) int {
 }
 
 func (c *Cache) Exists(keys []string) int {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	count := 0
 	for _, key := range keys {
@@ -30,8 +27,6 @@ func (c *Cache) Exists(keys []string) int {
 	return count
 }
 func (c *Cache) Keys() []string {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	keys := make([]string, 0, len(c.data))
 
@@ -44,8 +39,6 @@ func (c *Cache) Keys() []string {
 	return keys
 }
 func (c *Cache) Size() int {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	count := 0
 
@@ -59,8 +52,6 @@ func (c *Cache) Size() int {
 	return count
 }
 func (c *Cache) Flush() {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	c.data = make(map[string]Entry)
 }

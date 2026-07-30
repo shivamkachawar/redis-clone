@@ -1,7 +1,6 @@
 package aof
 
 import (
-	"bufio"
 	"fmt"
 	"go-redis/cache"
 	"go-redis/commands"
@@ -51,20 +50,20 @@ func (a *AOF) Write(tokens []string) error {
 		return err
 	}
 
-	return a.file.Sync()
+	return nil
 }
 func (a *AOF) Replay(cache *cache.Cache) error {
 	_, err := a.file.Seek(0, io.SeekStart)
 	if err != nil {
 		return err
 	}
-	reader := bufio.NewReader(a.file)
-	for {
-		tokens, err := protocol.ParseRESP(reader)
-
-		if err == io.EOF {
-			break
-		}
+	data, err := io.ReadAll(a.file)
+	if err != nil {
+		return err
+	}
+	pos := 0
+	for pos < len(data) {
+		tokens, consumed, err := protocol.ParseRESP(data[pos:])
 
 		if err != nil {
 			return err
@@ -75,6 +74,7 @@ func (a *AOF) Replay(cache *cache.Cache) error {
 		if err != nil {
 			return err
 		}
+		pos += consumed
 	}
 	return nil
 }

@@ -5,8 +5,6 @@ import (
 )
 
 func (c *Cache) Expire(key string, seconds int) bool {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {
@@ -20,8 +18,6 @@ func (c *Cache) Expire(key string, seconds int) bool {
 }
 
 func (c *Cache) Persist(key string) bool {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {
@@ -35,8 +31,6 @@ func (c *Cache) Persist(key string) bool {
 }
 
 func (c *Cache) TTL(key string) int {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 	if !exists {

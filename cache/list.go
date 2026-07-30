@@ -27,8 +27,6 @@ func (c *Cache) getOrCreateList(key string) (*protocol.ListValue, error) {
 	return list, nil
 }
 func (c *Cache) LPush(key string, values []string) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	list, err := c.getOrCreateList(key)
 	if err != nil {
@@ -42,8 +40,6 @@ func (c *Cache) LPush(key string, values []string) (int, error) {
 	return len(list.Values), nil
 }
 func (c *Cache) LRange(key string, start int, stop int) ([]string, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 
@@ -82,8 +78,6 @@ func (c *Cache) LRange(key string, start int, stop int) ([]string, error) {
 	return list.Values[start : stop+1], nil
 }
 func (c *Cache) LLen(key string) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	entry, exists := c.getEntry(key)
 
@@ -118,8 +112,6 @@ func (c *Cache) getList(key string) (*protocol.ListValue, bool, error) {
 	return list, true, nil
 }
 func (c *Cache) LPop(key string) (string, bool, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	list, exists, err := c.getList(key)
 	if err != nil || !exists {
@@ -136,8 +128,6 @@ func (c *Cache) LPop(key string) (string, bool, error) {
 	return value, true, nil
 }
 func (c *Cache) RPush(key string, values []string) (int, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	list, err := c.getOrCreateList(key)
 	if err != nil {
@@ -149,8 +139,6 @@ func (c *Cache) RPush(key string, values []string) (int, error) {
 	return len(list.Values), nil
 }
 func (c *Cache) RPop(key string) (string, bool, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
 
 	list, exists, err := c.getList(key)
 	if err != nil || !exists {

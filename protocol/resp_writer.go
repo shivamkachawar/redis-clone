@@ -2,69 +2,62 @@ package protocol
 
 import (
 	"fmt"
-	"net"
 )
 
-func writeSimpleString(conn net.Conn, message string) error {
+func writeSimpleString(message string) []byte {
+	return []byte(fmt.Sprintf("+%s\r\n", message))
+}
+func writeError(message string) []byte {
+	return []byte(fmt.Sprintf("-ERR %s\r\n", message))
+}
+func writeInteger(value int) []byte {
+	return []byte(fmt.Sprintf("+%d\r\n", value))
+}
+func writeBulkString(value string) []byte {
+	return []byte(fmt.Sprintf("$%d\r\n%s\r\n", len(value), value))
+}
+func writeNullBulkString() []byte {
+	return []byte("$-1\r\n")
+}
+func writeArray(elements []Response) ([]byte, error) {
+	data := []byte(fmt.Sprintf("*%d\r\n", len(elements)))
 
-	_, err := fmt.Fprintf(conn, "+%s\r\n", message)
-
-	return err
-}
-func WriteError(conn net.Conn, message string) error {
-	_, err := fmt.Fprintf(conn, "-ERR %s\r\n", message)
-	return err
-}
-func writeInteger(conn net.Conn, value int) error {
-	_, err := fmt.Fprintf(conn, ":%d\r\n", value)
-	return err
-}
-func writeBulkString(conn net.Conn, value string) error {
-	_, err := fmt.Fprintf(conn, "$%d\r\n%s\r\n", len(value), value)
-	return err
-}
-func writeNullBulkString(conn net.Conn) error {
-	_, err := fmt.Fprint(conn, "$-1\r\n")
-	return err
-}
-func writeArray(conn net.Conn, elements []Response) error {
-	_, err := fmt.Fprintf(conn, "*%d\r\n", len(elements))
-	if err != nil {
-		return err
-	}
-
-	for _, element := range elements {
-		err := WriteResponse(conn, element)
+	for _, e := range elements {
+		b, err := EncodeResponse(e)
 		if err != nil {
-			return err
+			return nil, err
 		}
+		data = append(data, b...)
 	}
 
-	return nil
+	return data, nil
 }
-func WriteResponse(conn net.Conn, response Response) error {
+func EncodeResponse(response Response) ([]byte, error) {
 	switch response.Type {
 
 	case SimpleString:
-		return writeSimpleString(conn, response.Value)
+		return writeSimpleString(response.Value), nil
 
 	case BulkString:
-		return writeBulkString(conn, response.Value)
+		return writeBulkString(response.Value), nil
 
 	case Integer:
-		return writeInteger(conn, response.Integer)
+		return writeInteger(response.Integer), nil
 
 	case NullBulkString:
-		return writeNullBulkString(conn)
+		return writeNullBulkString(), nil
 
 	case Array:
-		return writeArray(conn, response.Elements)
+		return writeArray(response.Elements)
 
 	case Error:
-		return WriteError(conn, response.Value)
+		return writeError(response.Value), nil
 
 	default:
-		return fmt.Errorf("unknown response type")
+		return nil, fmt.Errorf("unknown response type")
 	}
 
+}
+func EncodeError(message string) []byte {
+	return []byte(fmt.Sprintf("-ERR %s\r\n", message))
 }
