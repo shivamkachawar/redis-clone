@@ -50,3 +50,9 @@ func NewArray(elements []Response) Response {
 		Elements: elements,
 	}
 }
+func NewError(message string) Response {
+	return Response{
+		Type:  Error,
+		Value: message,
+	}
+}

@@ -19,6 +19,7 @@ func writeBulkString(value string) []byte {
 func writeNullBulkString() []byte {
 	return []byte("$-1\r\n")
 }
+
 func writeArray(elements []Response) ([]byte, error) {
 	data := []byte(fmt.Sprintf("*%d\r\n", len(elements)))
 
