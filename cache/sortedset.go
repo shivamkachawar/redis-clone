@@ -109,3 +109,45 @@ func (c *Cache) ZRank(key, member string) (int, bool, error) {
 
 	return rank, found, nil
 }
+func (c *Cache) ZRevRank(key, member string) (int, bool, error) {
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return 0, false, nil
+	}
+
+	value, ok := entry.Value.(*protocol.SortedSetValue)
+	if !ok {
+		return 0, false, protocol.ErrWrongType
+	}
+
+	rank, found := value.Value.RevRank(member)
+
+	return rank, found, nil
+}
+
+func (c *Cache) ZRevRange(key string, start, stop int) ([]string, error) {
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return []string{}, nil
+	}
+
+	value, ok := entry.Value.(*protocol.SortedSetValue)
+	if !ok {
+		return nil, protocol.ErrWrongType
+	}
+
+	return value.Value.RevRange(start, stop), nil
+}
+func (c *Cache) ZCount(key string, min, max float64) (int, error) {
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return 0, nil
+	}
+
+	value, ok := entry.Value.(*protocol.SortedSetValue)
+	if !ok {
+		return 0, protocol.ErrWrongType
+	}
+
+	return value.Value.Count(min, max), nil
+}

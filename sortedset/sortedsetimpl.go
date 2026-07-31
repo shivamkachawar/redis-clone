@@ -121,3 +121,36 @@ func (ss *SortedSet) Rank(member string) (int, bool) {
 
 	return 0, false
 }
+func (ss *SortedSet) RevRank(member string) (int, bool) {
+	rank, found := ss.Rank(member)
+	if !found {
+		return 0, false
+	}
+
+	return int(ss.skipList.Length) - rank - 1, true
+}
+
+func (ss *SortedSet) RevRange(start, stop int) []string {
+	result := ss.Range(start, stop)
+
+	for i, j := 0, len(result)-1; i < j; i, j = i+1, j-1 {
+		result[i], result[j] = result[j], result[i]
+	}
+
+	return result
+}
+func (ss *SortedSet) Count(min, max float64) int {
+	count := 0
+
+	current := ss.skipList.Head.Forward[0]
+
+	for current != nil {
+		if current.Score >= min && current.Score <= max {
+			count++
+		}
+
+		current = current.Forward[0]
+	}
+
+	return count
+}
