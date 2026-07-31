@@ -10,7 +10,7 @@ import (
 	"syscall"
 )
 
-func HandleReadableClient(client *Client, cache *cache.Cache, aofFile *aof.AOF) bool {
+func HandleReadableClient(client *Client, cache *cache.Cache, aofFile *aof.AOF, pubsub *PubSub) bool {
 
 	buffer := make([]byte, 4096)
 
@@ -96,7 +96,59 @@ func HandleReadableClient(client *Client, cache *cache.Cache, aofFile *aof.AOF) 
 
 			continue
 		}
+		if len(tokens) > 0 && tokens[0] == "SUBSCRIBE" {
 
+			response, err := executeSUBSCRIBE(client, pubsub, tokens)
+
+			client.InputBuffer = client.InputBuffer[consumed:]
+
+			if err != nil {
+				resp := protocol.EncodeError(err.Error())
+				syscall.Write(client.FD, resp)
+				continue
+			}
+
+			resp, err := protocol.EncodeResponse(response)
+			if err != nil {
+				fmt.Println("Encode Error:", err)
+				return true
+			}
+
+			_, err = syscall.Write(client.FD, resp)
+			if err != nil {
+				fmt.Println("Write Error:", err)
+				return true
+			}
+
+			continue
+		}
+
+		if len(tokens) > 0 && tokens[0] == "PUBLISH" {
+
+			response, err := executePUBLISH(pubsub, tokens)
+
+			client.InputBuffer = client.InputBuffer[consumed:]
+
+			if err != nil {
+				resp := protocol.EncodeError(err.Error())
+				syscall.Write(client.FD, resp)
+				continue
+			}
+
+			resp, err := protocol.EncodeResponse(response)
+			if err != nil {
+				fmt.Println("Encode Error:", err)
+				return true
+			}
+
+			_, err = syscall.Write(client.FD, resp)
+			if err != nil {
+				fmt.Println("Write Error:", err)
+				return true
+			}
+
+			continue
+		}
 		if client.InTransaction {
 			client.TransactionQueue = append(client.TransactionQueue, tokens)
 

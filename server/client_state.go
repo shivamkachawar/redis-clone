@@ -6,4 +6,6 @@ type Client struct {
 
 	InTransaction    bool
 	TransactionQueue [][]string
+
+	Subscriptions map[string]struct{}
 }

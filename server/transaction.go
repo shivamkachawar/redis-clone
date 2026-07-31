@@ -14,7 +14,6 @@ func executeTransaction(client *Client, cache *cache.Cache, aofFile *aof.AOF) (p
 		return protocol.Response{}, errors.New("ERR EXEC without MULTI")
 	}
 
-	// More code will come here...
 	responses := make([]protocol.Response, 0, len(client.TransactionQueue))
 
 	for _, tokens := range client.TransactionQueue {

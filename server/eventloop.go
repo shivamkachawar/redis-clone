@@ -70,6 +70,9 @@ func Run(cache *cache.Cache, aofFile *aof.AOF) error {
 	}
 	events := make([]syscall.EpollEvent, 10)
 	clients := make(map[int]*Client)
+	pubSub := &PubSub{
+		Channels: make(map[string]map[int]*Client),
+	}
 	for {
 		n, err := syscall.EpollWait(epollFD, events, -1)
 
@@ -122,17 +125,19 @@ func Run(cache *cache.Cache, aofFile *aof.AOF) error {
 
 					fmt.Println("Accepted Client:", clientFD)
 					clients[clientFD] = &Client{
-						FD:          clientFD,
-						InputBuffer: make([]byte, 0),
+						FD:            clientFD,
+						InputBuffer:   make([]byte, 0),
+						Subscriptions: make(map[string]struct{}),
 					}
 				}
 			} else {
 
 				client := clients[int(events[i].Fd)]
 
-				alive := HandleReadableClient(client, cache, aofFile)
+				alive := HandleReadableClient(client, cache, aofFile, pubSub)
 
 				if !alive {
+					removeClientFromPubSub(client, pubSub)
 
 					err := syscall.EpollCtl(
 						epollFD,
