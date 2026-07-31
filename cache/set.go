@@ -1,16 +1,21 @@
 package cache
 
-import "go-redis/protocol"
+import (
+	"go-redis/protocol"
+	"time"
+)
 
 func (c *Cache) getOrCreateSet(key string) (*protocol.SetValue, error) {
 	entry, exists := c.getEntry(key)
 
 	if !exists {
+		c.checkEviction()
 		set := &protocol.SetValue{
 			Members: make(map[string]struct{}),
 		}
 		c.data[key] = Entry{
-			Value: set,
+			Value:      set,
+			LastAccess: time.Now(),
 		}
 		return set, nil
 	}
@@ -106,5 +111,8 @@ func (c *Cache) SRem(key, member string) (int, error) {
 
 	delete(set.Members, member)
 
+	if len(set.Members) == 0 {
+		delete(c.data, key)
+	}
 	return 1, nil
 }

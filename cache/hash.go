@@ -3,17 +3,20 @@ package cache
 import (
 	"go-redis/protocol"
 	"strconv"
+	"time"
 )
 
 func (c *Cache) getOrCreateHash(key string) (*protocol.HashValue, error) {
 	entry, exists := c.getEntry(key)
 
 	if !exists {
+		c.checkEviction()
 		hash := &protocol.HashValue{
 			Fields: make(map[string]string),
 		}
 		c.data[key] = Entry{
-			Value: hash,
+			Value:      hash,
+			LastAccess: time.Now(),
 		}
 		return hash, nil
 	}
@@ -81,6 +84,9 @@ func (c *Cache) HDel(key, field string) (int, error) {
 		return 0, nil
 	}
 	delete(hash.Fields, field)
+	if len(hash.Fields) == 0 {
+		delete(c.data, key)
+	}
 
 	return 1, nil
 

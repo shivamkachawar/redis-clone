@@ -3,18 +3,21 @@ package cache
 import (
 	"go-redis/protocol"
 	"go-redis/sortedset"
+	"time"
 )
 
 func (c *Cache) getOrCreateSortedSet(key string) (*sortedset.SortedSet, error) {
 	entry, exists := c.getEntry(key)
 
 	if !exists {
+		c.checkEviction()
 		ss := sortedset.NewSortedSet()
 
 		c.data[key] = Entry{
 			Value: &protocol.SortedSetValue{
 				Value: ss,
 			},
+			LastAccess: time.Now(),
 		}
 
 		return ss, nil
@@ -42,12 +45,16 @@ func (c *Cache) ZAdd(key string, score float64, member string) error {
 
 func (c *Cache) ZRem(key, member string) (bool, error) {
 
-	ss, err := c.getOrCreateSortedSet(key)
-	if err != nil {
-		return false, err
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return false, nil
+	}
+	value, ok := entry.Value.(*protocol.SortedSetValue)
+	if !ok {
+		return false, protocol.ErrWrongType
 	}
 
-	return ss.Delete(member), nil
+	return value.Value.Delete(member), nil
 }
 
 func (c *Cache) ZScore(key, member string) (float64, bool, error) {

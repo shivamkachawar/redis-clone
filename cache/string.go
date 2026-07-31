@@ -8,11 +8,15 @@ import (
 )
 
 func (c *Cache) Set(key string, value string, ttl int) {
+	if _, exists := c.data[key]; !exists {
+		c.checkEviction()
+	}
 
 	entry := Entry{
 		Value: &protocol.StringValue{
 			Value: value,
 		},
+		LastAccess: time.Now(),
 	}
 
 	if ttl > 0 {
@@ -68,10 +72,14 @@ func (c *Cache) MGet(keys []string) ([]protocol.Response, error) {
 func (c *Cache) MSet(keys []string, values []string) {
 
 	for i := 0; i < len(keys); i++ {
+		if _, exists := c.data[keys[i]]; !exists {
+			c.checkEviction()
+		}
 		c.data[keys[i]] = Entry{
 			Value: &protocol.StringValue{
 				Value: values[i],
 			},
+			LastAccess: time.Now(),
 		}
 	}
 }
@@ -80,10 +88,12 @@ func (c *Cache) Append(key string, value string) int {
 	entry, exists := c.getEntry(key)
 
 	if !exists {
+		c.checkEviction()
 		c.data[key] = Entry{
 			Value: &protocol.StringValue{
 				Value: value,
 			},
+			LastAccess: time.Now(),
 		}
 		return len(value)
 	}
@@ -116,10 +126,12 @@ func (c *Cache) GetSet(key string, value string) (string, bool) {
 	entry, exists := c.getEntry(key)
 
 	if !exists {
+		c.checkEviction()
 		c.data[key] = Entry{
 			Value: &protocol.StringValue{
 				Value: value,
 			},
+			LastAccess: time.Now(),
 		}
 		return "", false
 	}
@@ -133,6 +145,7 @@ func (c *Cache) GetSet(key string, value string) (string, bool) {
 		Value: &protocol.StringValue{
 			Value: value,
 		},
+		LastAccess: time.Now(),
 	}
 	return oldValue, true
 }
@@ -143,10 +156,12 @@ func (c *Cache) changeBy(key string, delta int) (int, error) {
 
 	// Key doesn't exist
 	if !exists {
+		c.checkEviction()
 		c.data[key] = Entry{
 			Value: &protocol.StringValue{
 				Value: strconv.Itoa(delta),
 			},
+			LastAccess: time.Now(),
 		}
 		return delta, nil
 	}

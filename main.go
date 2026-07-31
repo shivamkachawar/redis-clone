@@ -13,7 +13,7 @@ const (
 )
 
 func main() {
-	cache := cache.NewCache()
+	cache := cache.NewCache(3)
 
 	aofFile, err := aof.NewAOF("appendonly.aof")
 	if err != nil {

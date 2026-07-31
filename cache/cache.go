@@ -6,17 +6,20 @@ import (
 )
 
 type Entry struct {
-	Value  protocol.RedisValue
-	Expiry time.Time
+	Value      protocol.RedisValue
+	Expiry     time.Time
+	LastAccess time.Time
 }
 
 type Cache struct {
-	data map[string]Entry
+	data    map[string]Entry
+	maxKeys int
 }
 
-func NewCache() *Cache {
+func NewCache(maxKeys int) *Cache {
 	return &Cache{
-		data: make(map[string]Entry),
+		data:    make(map[string]Entry),
+		maxKeys: maxKeys,
 	}
 }
 
@@ -34,6 +37,8 @@ func (c *Cache) getEntry(key string) (*Entry, bool) {
 		delete(c.data, key)
 		return nil, false
 	}
+	entry.LastAccess = time.Now()
+	c.data[key] = entry
 
 	return &entry, true
 }

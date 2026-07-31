@@ -2,18 +2,21 @@ package cache
 
 import (
 	"go-redis/protocol"
+	"time"
 )
 
 func (c *Cache) getOrCreateList(key string) (*protocol.ListValue, error) {
 	entry, exists := c.getEntry(key)
 
 	if !exists {
+		c.checkEviction()
 		list := &protocol.ListValue{
 			Values: []string{},
 		}
 
 		c.data[key] = Entry{
-			Value: list,
+			Value:      list,
+			LastAccess: time.Now(),
 		}
 
 		return list, nil
