@@ -97,6 +97,14 @@ func ExecuteCommand(tokens []string, cache *cache.Cache) (protocol.Response, err
 		return executeSMEMBERS(tokens, cache)
 	case "SREM":
 		return executeSREM(tokens, cache)
+	case "ZADD":
+		return executeZADD(tokens, cache)
+	case "ZREM":
+		return executeZREM(tokens, cache)
+	case "ZSCORE":
+		return executeZSCORE(tokens, cache)
+	case "ZCARD":
+		return executeZCARD(tokens, cache)
 	default:
 		return protocol.Response{}, fmt.Errorf("Error: Unknown command")
 	}

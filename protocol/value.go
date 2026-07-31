@@ -1,5 +1,7 @@
 package protocol
 
+import "go-redis/sortedset"
+
 type RedisValue interface {
 	isRedisValue()
 }
@@ -27,3 +29,9 @@ type SetValue struct {
 }
 
 func (*SetValue) isRedisValue() {}
+
+type SortedSetValue struct {
+	Value *sortedset.SortedSet
+}
+
+func (*SortedSetValue) isRedisValue() {}
