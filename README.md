@@ -202,42 +202,57 @@ Simple Least Recently Used (LRU) eviction policy.
 
 ## Project Structure
 
-```
+```text
 redis-clone/
 │
-├── cmd/
-│
-├── server/
-│
-├── networking/
-│   ├── epoll.go
-│   ├── server.go
-│   └── client.go
-│
-├── protocol/
-│   ├── parser.go
-│   ├── serializer.go
-│   └── resp.go
-│
-├── commands/
-│   ├── string.go
-│   ├── list.go
+├── cache/
 │   ├── hash.go
+│   ├── key.go
+│   ├── list.go
+│   ├── lru.go
 │   ├── set.go
 │   ├── sortedset.go
-│   ├── transaction.go
+│   └── string.go
+│
+├── commands/
+│   ├── commands.go
+│   ├── commands_expiry.go
+│   ├── commands_hash.go
+│   ├── commands_key.go
+│   ├── commands_list.go
+│   ├── commands_set.go
+│   ├── commands_sortedset.go
+│   └── commands_string.go
+│
+├── protocol/
+│   ├── errors.go
+│   ├── resp.go
+│   ├── resp_writer.go
+│   ├── response.go
+│   └── value.go
+│
+├── server/
+│   ├── client_event.go
+│   ├── client_state.go
+│   ├── eventloop.go
+│   ├── helpers.go
 │   ├── pubsub.go
-│   └── general.go
+│   └── transaction.go
 │
-├── cache/
+├── sortedset/
+│   ├── constructor.go
+│   ├── delete.go
+│   ├── insert.go
+│   ├── random.go
+│   ├── skiplist.go
+│   ├── sortedsetimpl.go
+│   └── traverse.go
 │
-├── persistence/
-│
-├── skiplist/
-│
-├── pubsub/
-│
-└── main.go
+├── appendonly.aof
+├── go-redis
+├── go.mod
+├── main.go
+└── README.md
 ```
 
 ---
