@@ -80,3 +80,16 @@ func (c *Cache) ZCard(key string) (uint64, error) {
 
 	return value.Value.Card(), nil
 }
+func (c *Cache) ZRange(key string, start, stop int) ([]string, error) {
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return []string{}, nil
+	}
+
+	value, ok := entry.Value.(*protocol.SortedSetValue)
+	if !ok {
+		return nil, protocol.ErrWrongType
+	}
+
+	return value.Value.Range(start, stop), nil
+}
