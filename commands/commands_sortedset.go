@@ -94,3 +94,19 @@ func executeZRANGE(tokens []string, cache *cache.Cache) (protocol.Response, erro
 
 	return protocol.NewArray(responses), nil
 }
+func executeZRANK(tokens []string, cache *cache.Cache) (protocol.Response, error) {
+	if len(tokens) != 3 {
+		return protocol.Response{}, protocol.ErrWrongNumberOfArguments
+	}
+
+	rank, found, err := cache.ZRank(tokens[1], tokens[2])
+	if err != nil {
+		return protocol.Response{}, err
+	}
+
+	if !found {
+		return protocol.NewNullBulkString(), nil
+	}
+
+	return protocol.NewInteger(rank), nil
+}

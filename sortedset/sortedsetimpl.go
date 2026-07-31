@@ -101,3 +101,23 @@ func (ss *SortedSet) Range(start, stop int) []string {
 
 	return result
 }
+func (ss *SortedSet) Rank(member string) (int, bool) {
+	node, exists := ss.dict[member]
+	if !exists {
+		return 0, false
+	}
+
+	current := ss.skipList.Head.Forward[0]
+	rank := 0
+
+	for current != nil {
+		if current == node {
+			return rank, true
+		}
+
+		current = current.Forward[0]
+		rank++
+	}
+
+	return 0, false
+}

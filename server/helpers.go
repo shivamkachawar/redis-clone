@@ -9,7 +9,7 @@ func isWriteCommand(command string) bool {
 		"EXPIRE", "PERSIST", "FLUSHDB",
 		"LPUSH",
 		"HSET", "HINCRBY", "HSETNX",
-		"SADD", "ZADD":
+		"SADD", "ZADD", "ZREM":
 		return true
 	default:
 		return false

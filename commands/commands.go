@@ -107,6 +107,8 @@ func ExecuteCommand(tokens []string, cache *cache.Cache) (protocol.Response, err
 		return executeZCARD(tokens, cache)
 	case "ZRANGE":
 		return executeZRANGE(tokens, cache)
+	case "ZRANK":
+		return executeZRANK(tokens, cache)
 	default:
 		return protocol.Response{}, fmt.Errorf("Error: Unknown command")
 	}

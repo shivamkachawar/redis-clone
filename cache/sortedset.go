@@ -93,3 +93,19 @@ func (c *Cache) ZRange(key string, start, stop int) ([]string, error) {
 
 	return value.Value.Range(start, stop), nil
 }
+
+func (c *Cache) ZRank(key, member string) (int, bool, error) {
+	entry, exists := c.getEntry(key)
+	if !exists {
+		return 0, false, nil
+	}
+
+	value, ok := entry.Value.(*protocol.SortedSetValue)
+	if !ok {
+		return 0, false, protocol.ErrWrongType
+	}
+
+	rank, found := value.Value.Rank(member)
+
+	return rank, found, nil
+}
