@@ -212,8 +212,8 @@ redis-clone/
 │   ├── lru.go
 │   ├── set.go
 │   ├── sortedset.go
-│   └── string.go
-    └── cache.go
+│   ├── string.go
+│   └── cache.go
 │
 ├── commands/
 │   ├── commands.go
